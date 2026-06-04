@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visual Bookmark - WP7 Final Edit</title>
+    <title>Visual Bookmark - WP7 Smart Search & Edit</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
@@ -90,7 +90,7 @@
 
             <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 bg-[#111111] p-3">
                 <div class="relative w-full xl:w-1/4 flex-shrink-0">
-                    <input type="text" id="searchInput" placeholder="Cari tag, catatan, kategori..." class="w-full p-2 text-sm bg-[#000] border-none">
+                    <input type="text" id="searchInput" placeholder="Gunakan spasi untuk multi-kata..." class="w-full p-2 text-sm bg-[#000] border-none">
                     <button onclick="clearSearch()" class="absolute right-3 top-2 text-[#666] hover:text-white font-bold">✕</button>
                 </div>
                 
@@ -461,6 +461,7 @@
 
         function triggerSearch(term) { document.getElementById('searchInput').value = term; renderGallery(term); }
         function clearSearch() { document.getElementById('searchInput').value = ''; renderGallery(''); }
+        
         document.getElementById('searchInput').addEventListener('input', (e) => renderGallery(e.target.value));
 
         function renderGallery(filterText = document.getElementById('searchInput').value, keepPage = false) {
@@ -481,7 +482,13 @@
             else if(sortVal === 'newest') displayData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             else if(sortVal === 'category') displayData.sort((a, b) => a.category.localeCompare(b.category));
 
-            if (filterText) displayData = displayData.filter(item => `${item.category} ${item.tags} ${item.notes}`.toLowerCase().includes(filterText.toLowerCase().trim()));
+            if (filterText) {
+                const searchTerms = filterText.toLowerCase().trim().split(/\s+/);
+                displayData = displayData.filter(item => {
+                    const itemText = `${item.category} ${item.tags} ${item.notes}`.toLowerCase();
+                    return searchTerms.every(term => itemText.includes(term));
+                });
+            }
             
             filteredDataLength = displayData.length;
             document.getElementById('itemCount').innerText = filteredDataLength;
