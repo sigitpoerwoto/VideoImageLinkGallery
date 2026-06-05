@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visual Bookmark - WP7 Smart Search & Edit</title>
+    <title>Visual Bookmark - WP7 Smart Merge</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
@@ -556,6 +556,46 @@
             updateSelection();
         }
 
+        // --- NEW: SMART MERGE LOGIC ---
+        function smartMergeItem(newItem) {
+            let existingIndex = galleryData.findIndex(item => item.url === newItem.url);
+            
+            if (existingIndex === -1) {
+                galleryData.unshift(newItem);
+                return { status: 'added' };
+            } else {
+                let existingItem = galleryData[existingIndex];
+                let isModified = false;
+
+                let oldTags = (existingItem.tags || '').split(',').map(t=>t.trim()).filter(t=>t);
+                let newTags = (newItem.tags || '').split(',').map(t=>t.trim()).filter(t=>t);
+                let mergedTags = [...new Set([...oldTags, ...newTags])].join(', ');
+                if (existingItem.tags !== mergedTags) { existingItem.tags = mergedTags; isModified = true; }
+
+                let oldNotesLen = (existingItem.notes || '').length;
+                let newNotesLen = (newItem.notes || '').length;
+                if (newNotesLen > oldNotesLen) { existingItem.notes = newItem.notes; isModified = true; }
+
+                let defaultCats = ['Uncategorized', 'Bulk Import', 'M3U Import'];
+                if (newItem.category && !defaultCats.includes(newItem.category)) {
+                    if (!existingItem.category || defaultCats.includes(existingItem.category)) {
+                        existingItem.category = newItem.category; isModified = true;
+                    }
+                }
+
+                if (newItem.type === 'website' && existingItem.type !== 'website') {
+                    existingItem.type = 'website'; isModified = true;
+                }
+
+                if (isModified) {
+                    existingItem.updatedAt = new Date().toISOString();
+                    return { status: 'updated' };
+                } else {
+                    return { status: 'skipped' };
+                }
+            }
+        }
+
         function openModal(mode, id = null) {
             document.getElementById('mediaForm').reset(); document.getElementById('editId').value = '';
             document.getElementById('typeOverride').value = 'auto';
@@ -587,8 +627,16 @@
             if (editId) {
                 const index = galleryData.findIndex(i => i.id === editId);
                 if(index > -1) galleryData[index] = { ...galleryData[index], url, type, category, tags, notes, updatedAt: new Date().toISOString() };
-            } else galleryData.unshift({ id: Date.now().toString()+Math.random().toString(36).substr(2,5), url, type, category, tags, notes, createdAt: new Date().toISOString() });
-            document.getElementById('formModal').classList.add('hidden'); saveData();
+                document.getElementById('formModal').classList.add('hidden'); saveData();
+            } else { 
+                let res = smartMergeItem({
+                    id: Date.now().toString()+Math.random().toString(36).substr(2,5), 
+                    url, type, category, tags, notes, createdAt: new Date().toISOString()
+                });
+                document.getElementById('formModal').classList.add('hidden'); saveData();
+                if (res.status === 'skipped') alert("URL ini sudah ada di galeri dan datanya sudah sama persis!");
+                else if (res.status === 'updated') alert("URL ini sudah ada! Detail yang Anda masukkan baru saja digabungkan/diperbarui dengan data yang lama.");
+            }
         });
 
         // --- Core Processing Functions ---
@@ -615,25 +663,23 @@
 
             if(p && p.app==="MyGalleryPro") { 
                 createBackup(); 
-                const existingIds = new Set(galleryData.map(i=>i.id)); 
-                const existingUrls = new Set(galleryData.map(i=>i.url)); 
-                let added = 0; let skipped = 0;
+                let added = 0; let updated = 0; let skipped = 0;
                 
                 p.data.forEach(i => { 
-                    if(!existingIds.has(i.id) && !existingUrls.has(i.url)) { 
-                        galleryData.push(i); 
-                        existingIds.add(i.id); existingUrls.add(i.url); added++; 
-                    } else { skipped++; }
+                    let res = smartMergeItem(i);
+                    if(res.status === 'added') added++;
+                    else if(res.status === 'updated') updated++;
+                    else skipped++;
                 }); 
-                saveData(); alert(`Merge Sukses! ${added} media ditambahkan.\n(${skipped} media diabaikan karena duplikat).`);
+                saveData(); alert(`Merge Pintar Selesai!\n\nDitambahkan baru: ${added}\nDiperbarui/Diperkaya: ${updated}\nDiabaikan (Sudah sama): ${skipped}`);
             } else { alert("Data tidak dikenali sebagai format MyGalleryPro."); }
         }
 
         function processM3uImport(text) {
             createBackup();
             const lines = text.split('\n');
-            let count = 0; let skipped = 0; let currentCat = 'M3U Import'; let currentNote = '';
-            const existingUrls = new Set(galleryData.map(i=>i.url)); 
+            let added = 0; let updated = 0; let skipped = 0; 
+            let currentCat = 'M3U Import'; let currentNote = '';
             
             lines.forEach(line => {
                 line = line.trim();
@@ -641,18 +687,19 @@
                     const catMatch = line.match(/group-title="([^"]+)"/i); if (catMatch) currentCat = catMatch[1];
                     const commaIdx = line.lastIndexOf(','); if (commaIdx > -1) currentNote = line.substring(commaIdx + 1).trim();
                 } else if (line.startsWith('http')) {
-                    if(!existingUrls.has(line)) {
-                        galleryData.unshift({
-                            id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
-                            url: line, type: detectMediaType(line), category: currentCat, tags: '', 
-                            notes: currentNote || 'Streaming Channel', createdAt: new Date().toISOString()
-                        }); 
-                        existingUrls.add(line); count++;
-                    } else { skipped++; }
+                    let newItem = {
+                        id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                        url: line, type: detectMediaType(line), category: currentCat, tags: '', 
+                        notes: currentNote || 'Streaming Channel', createdAt: new Date().toISOString()
+                    };
+                    let res = smartMergeItem(newItem);
+                    if(res.status === 'added') added++;
+                    else if(res.status === 'updated') updated++;
+                    else skipped++;
                     currentNote = '';
                 }
             });
-            if(count > 0) { saveData(); alert(`${count} channel M3U di-import! (${skipped} duplikat diabaikan)`); }
+            if(added > 0 || updated > 0) { saveData(); alert(`Import M3U Selesai!\n\nChannel baru: ${added}\nChannel diperbarui: ${updated}\nDiabaikan: ${skipped}`); }
             else { alert("Tidak ada link baru yang valid di M3U ini."); }
         }
 
@@ -742,16 +789,17 @@
 
             const urls = rawText.split('\n').map(u => u.trim().replace(/\.gifv(\?.*)?$/i, '.mp4$1')).filter(u => u.startsWith('http')); 
             
-            let count = 0; let skipped = 0;
-            const existingUrls = new Set(galleryData.map(i=>i.url)); 
+            let added = 0; let updated = 0; let skipped = 0;
             
             urls.forEach(url => { 
-                if(!existingUrls.has(url)) { 
-                    galleryData.unshift({ id: Date.now().toString() + Math.random().toString(36).substr(2, 5), url: url, type: detectMediaType(url), category: category, tags: finalTags, notes: '', createdAt: new Date().toISOString() }); 
-                    existingUrls.add(url); count++; 
-                } else { skipped++; }
+                let newItem = { id: Date.now().toString() + Math.random().toString(36).substr(2, 5), url: url, type: detectMediaType(url), category: category, tags: finalTags, notes: '', createdAt: new Date().toISOString() };
+                let res = smartMergeItem(newItem);
+                if(res.status === 'added') added++;
+                else if(res.status === 'updated') updated++;
+                else skipped++;
             });
-            if (count > 0) { saveData(); alert(`${count} link ditambahkan. (${skipped} duplikat dibuang)`); } else alert("Link kosong atau semua link sudah ada di galeri.");
+            if(added > 0 || updated > 0) { saveData(); alert(`Bulk Selesai!\n\nLink baru: ${added}\nLink diperbarui: ${updated}\nDiabaikan: ${skipped}`); }
+            else { alert("Link kosong atau semua link sudah ada di galeri."); }
             document.getElementById('bulkModal').classList.add('hidden');
         });
 
