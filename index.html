@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visual Bookmark - WP7 Smart Merge</title>
+    <title>Visual Bookmark - WP7 Perfect Core</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
@@ -77,6 +77,7 @@
                 
                 <span class="text-[#444]">|</span>
 
+                <button onclick="openCleanUrlsModal()" class="btn-wp7 text-[#E81123] whitespace-nowrap">🧹 BERSIHKAN URL</button>
                 <button onclick="undoLastAction()" class="btn-wp7 text-[#FFB900] whitespace-nowrap">↩️ UNDO</button>
                 <button onclick="clearCache()" class="btn-wp7 text-[#E81123] whitespace-nowrap">🗑️ RESET</button>
             </div>
@@ -167,6 +168,18 @@
             <div class="flex gap-8">
                 <button onclick="executeM3uExport()" class="btn-wp7 text-[#D83B01] text-sm">UNDUH FILE</button>
                 <button onclick="document.getElementById('m3uModal').classList.add('hidden')" class="btn-wp7 text-[#888888] text-sm">BATAL</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cleanUrlsModal" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center p-6 z-50">
+        <div class="bg-[#111111] border-2 border-[#333333] w-full max-w-md p-8">
+            <h2 class="text-2xl font-light mb-4 text-[#E81123] uppercase tracking-wider">🧹 Sapu Bersih URL</h2>
+            <p class="text-xs text-[#888888] mb-6 leading-relaxed">Masukkan awalan URL/domain (contoh: <code class="text-white">https://vip1.slbfsl.com</code>). Sistem akan membasmi semua link yang berawalan atau mengandung teks tersebut.</p>
+            <input type="text" id="cleanPatternInput" placeholder="Contoh: https://vip1.slbfsl.com" class="w-full p-3 mb-6 bg-[#000] border border-[#444] text-white outline-none focus:border-[#E81123]">
+            <div class="flex gap-8">
+                <button onclick="executeInAppUrlClean()" class="btn-wp7 text-[#E81123] text-sm">SAPU BERSIH</button>
+                <button onclick="document.getElementById('cleanUrlsModal').classList.add('hidden')" class="btn-wp7 text-[#888888] text-sm">BATAL</button>
             </div>
         </div>
     </div>
@@ -415,7 +428,14 @@
             }
         }
 
-        function saveData() { localStorage.setItem('smartGalleryData', JSON.stringify(galleryData)); renderGallery(document.getElementById('searchInput').value, true); }
+        function saveData() { 
+            try {
+                localStorage.setItem('smartGalleryData', JSON.stringify(galleryData)); 
+            } catch (e) {
+                alert("⚠️ MEMORI BROWSER PENUH!\n\nAnda mencapai batas maksimal penyimpanan (Local Storage ~5MB). Browser menolak menyimpan data lebih banyak.\n\nTips: Export data Anda ke TXT, Reset aplikasi, lalu mulai dari awal.");
+            }
+            renderGallery(document.getElementById('searchInput').value, true); 
+        }
         
         function getYoutubeId(url) {
             const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/);
@@ -556,43 +576,79 @@
             updateSelection();
         }
 
-        // --- NEW: SMART MERGE LOGIC ---
-        function smartMergeItem(newItem) {
-            let existingIndex = galleryData.findIndex(item => item.url === newItem.url);
+        // --- NEW: O(1) SMART MERGE BULK ENGINE ---
+        function smartMergeBulk(itemsArray) {
+            let added = 0; let updated = 0; let skipped = 0;
+            let urlMap = new Map();
             
-            if (existingIndex === -1) {
-                galleryData.unshift(newItem);
-                return { status: 'added' };
-            } else {
-                let existingItem = galleryData[existingIndex];
-                let isModified = false;
+            // Map existing data (O(N))
+            galleryData.forEach(item => urlMap.set(item.url, item));
+            let addedItems = [];
+            
+            // Process new items (O(M))
+            itemsArray.forEach(newItem => {
+                if (urlMap.has(newItem.url)) {
+                    let existingItem = urlMap.get(newItem.url);
+                    let isModified = false;
 
-                let oldTags = (existingItem.tags || '').split(',').map(t=>t.trim()).filter(t=>t);
-                let newTags = (newItem.tags || '').split(',').map(t=>t.trim()).filter(t=>t);
-                let mergedTags = [...new Set([...oldTags, ...newTags])].join(', ');
-                if (existingItem.tags !== mergedTags) { existingItem.tags = mergedTags; isModified = true; }
+                    let oldTags = (existingItem.tags || '').split(',').map(t=>t.trim()).filter(t=>t);
+                    let newTags = (newItem.tags || '').split(',').map(t=>t.trim()).filter(t=>t);
+                    let mergedTags = [...new Set([...oldTags, ...newTags])].join(', ');
+                    if (existingItem.tags !== mergedTags) { existingItem.tags = mergedTags; isModified = true; }
 
-                let oldNotesLen = (existingItem.notes || '').length;
-                let newNotesLen = (newItem.notes || '').length;
-                if (newNotesLen > oldNotesLen) { existingItem.notes = newItem.notes; isModified = true; }
+                    let oldNotesLen = (existingItem.notes || '').length;
+                    let newNotesLen = (newItem.notes || '').length;
+                    if (newNotesLen > oldNotesLen) { existingItem.notes = newItem.notes; isModified = true; }
 
-                let defaultCats = ['Uncategorized', 'Bulk Import', 'M3U Import'];
-                if (newItem.category && !defaultCats.includes(newItem.category)) {
-                    if (!existingItem.category || defaultCats.includes(existingItem.category)) {
-                        existingItem.category = newItem.category; isModified = true;
+                    let defaultCats = ['Uncategorized', 'Bulk Import', 'M3U Import'];
+                    if (newItem.category && !defaultCats.includes(newItem.category)) {
+                        if (!existingItem.category || defaultCats.includes(existingItem.category)) {
+                            existingItem.category = newItem.category; isModified = true;
+                        }
                     }
-                }
 
-                if (newItem.type === 'website' && existingItem.type !== 'website') {
-                    existingItem.type = 'website'; isModified = true;
-                }
+                    if (newItem.type === 'website' && existingItem.type !== 'website') {
+                        existingItem.type = 'website'; isModified = true;
+                    }
 
-                if (isModified) {
-                    existingItem.updatedAt = new Date().toISOString();
-                    return { status: 'updated' };
+                    if (isModified) {
+                        existingItem.updatedAt = new Date().toISOString();
+                        updated++;
+                    } else {
+                        skipped++;
+                    }
                 } else {
-                    return { status: 'skipped' };
+                    addedItems.push(newItem);
+                    urlMap.set(newItem.url, newItem);
+                    added++;
                 }
+            });
+            
+            if (addedItems.length > 0) {
+                galleryData = [...addedItems, ...galleryData];
+            }
+            return { added, updated, skipped };
+        }
+
+        // --- IN-APP URL CLEANER EXECUTIVE ---
+        function openCleanUrlsModal() {
+            document.getElementById('cleanPatternInput').value = '';
+            document.getElementById('cleanUrlsModal').classList.remove('hidden');
+        }
+
+        function executeInAppUrlClean() {
+            const pattern = document.getElementById('cleanPatternInput').value.trim();
+            if(!pattern) return alert("Masukkan kata kunci atau awalan URL!");
+            
+            if(confirm(`🚨 PERINGATAN MASAL:\n\nApakah Anda yakin ingin menghapus SEMUA data yang URL-nya mengandung/diawali '${pattern}'?\nAksi ini tidak dapat dibatalkan.`)) {
+                createBackup(); 
+                const initialCount = galleryData.length;
+                galleryData = galleryData.filter(item => !item.url.toLowerCase().includes(pattern.toLowerCase()));
+                const removedCount = initialCount - galleryData.length;
+                
+                saveData();
+                document.getElementById('cleanUrlsModal').classList.add('hidden');
+                alert(`🧹 PEMBERSIHAN SELESAI!\n\n${removedCount} item mati berhasil disapu bersih dari galeri.`);
             }
         }
 
@@ -629,13 +685,11 @@
                 if(index > -1) galleryData[index] = { ...galleryData[index], url, type, category, tags, notes, updatedAt: new Date().toISOString() };
                 document.getElementById('formModal').classList.add('hidden'); saveData();
             } else { 
-                let res = smartMergeItem({
-                    id: Date.now().toString()+Math.random().toString(36).substr(2,5), 
-                    url, type, category, tags, notes, createdAt: new Date().toISOString()
-                });
+                let newItem = { id: Date.now().toString()+Math.random().toString(36).substr(2,5), url, type, category, tags, notes, createdAt: new Date().toISOString() };
+                let res = smartMergeBulk([newItem]);
                 document.getElementById('formModal').classList.add('hidden'); saveData();
-                if (res.status === 'skipped') alert("URL ini sudah ada di galeri dan datanya sudah sama persis!");
-                else if (res.status === 'updated') alert("URL ini sudah ada! Detail yang Anda masukkan baru saja digabungkan/diperbarui dengan data yang lama.");
+                if (res.skipped > 0) alert("URL ini sudah ada di galeri!");
+                else if (res.updated > 0) alert("URL sudah ada! Data digabungkan dan diperbarui.");
             }
         });
 
@@ -658,28 +712,22 @@
             catch(err) { 
                 p = recoverTruncatedJSON(text);
                 if (!p) { alert("Format TXT sangat rusak dan tidak bisa dipulihkan. Pastikan file valid."); return; } 
-                else { alert("PERINGATAN: File terpotong sebagian!\nRecovery Engine telah menyelamatkan data link Anda."); }
+                else { alert("PERINGATAN: File terpotong sebagian!\nData berhasil diselamatkan."); }
             }
 
             if(p && p.app==="MyGalleryPro") { 
                 createBackup(); 
-                let added = 0; let updated = 0; let skipped = 0;
-                
-                p.data.forEach(i => { 
-                    let res = smartMergeItem(i);
-                    if(res.status === 'added') added++;
-                    else if(res.status === 'updated') updated++;
-                    else skipped++;
-                }); 
-                saveData(); alert(`Merge Pintar Selesai!\n\nDitambahkan baru: ${added}\nDiperbarui/Diperkaya: ${updated}\nDiabaikan (Sudah sama): ${skipped}`);
+                let res = smartMergeBulk(p.data);
+                saveData(); 
+                alert(`Merge Pintar Selesai!\n\nDitambahkan baru: ${res.added}\nDiperbarui: ${res.updated}\nDiabaikan (Sama Persis): ${res.skipped}`);
             } else { alert("Data tidak dikenali sebagai format MyGalleryPro."); }
         }
 
         function processM3uImport(text) {
             createBackup();
             const lines = text.split('\n');
-            let added = 0; let updated = 0; let skipped = 0; 
             let currentCat = 'M3U Import'; let currentNote = '';
+            let newItems = [];
             
             lines.forEach(line => {
                 line = line.trim();
@@ -687,20 +735,20 @@
                     const catMatch = line.match(/group-title="([^"]+)"/i); if (catMatch) currentCat = catMatch[1];
                     const commaIdx = line.lastIndexOf(','); if (commaIdx > -1) currentNote = line.substring(commaIdx + 1).trim();
                 } else if (line.startsWith('http')) {
-                    let newItem = {
+                    newItems.push({
                         id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
                         url: line, type: detectMediaType(line), category: currentCat, tags: '', 
                         notes: currentNote || 'Streaming Channel', createdAt: new Date().toISOString()
-                    };
-                    let res = smartMergeItem(newItem);
-                    if(res.status === 'added') added++;
-                    else if(res.status === 'updated') updated++;
-                    else skipped++;
+                    });
                     currentNote = '';
                 }
             });
-            if(added > 0 || updated > 0) { saveData(); alert(`Import M3U Selesai!\n\nChannel baru: ${added}\nChannel diperbarui: ${updated}\nDiabaikan: ${skipped}`); }
-            else { alert("Tidak ada link baru yang valid di M3U ini."); }
+            
+            if(newItems.length > 0) { 
+                let res = smartMergeBulk(newItems);
+                saveData(); 
+                alert(`Import M3U Selesai!\n\nChannel baru: ${res.added}\nChannel diperbarui: ${res.updated}\nDiabaikan: ${res.skipped}`); 
+            } else { alert("Tidak ada link baru yang valid di M3U ini."); }
         }
 
         function openImportUrlModal() {
@@ -725,59 +773,28 @@
                 } catch(e) {
                     response = await fetch('https://corsproxy.io/?' + encodeURIComponent(url));
                 }
-                
-                if (!response.ok) throw new Error("Gagal mengambil data. URL mungkin tidak bisa diakses.");
                 const textData = await response.text();
+                if (textData.trim().startsWith('<!DOCTYPE html>')) throw new Error("Diblokir sistem keamanan jaringan.");
                 
-                if (textData.trim().startsWith('<!DOCTYPE html>') || textData.trim().startsWith('<html')) {
-                    throw new Error("URL ini sepertinya diblokir oleh sistem keamanan jaringan internet Anda (Terdeteksi mengembalikan halaman HTML peringatan).");
-                }
-                
-                let isM3u = false;
-                if (type === 'm3u') isM3u = true;
-                else if (type === 'txt') isM3u = false;
-                else {
-                    isM3u = url.toLowerCase().includes('.m3u') || textData.startsWith('#EXTM3U');
-                }
-                
-                if (isM3u) processM3uImport(textData);
-                else processTxtImport(textData);
-                
+                let isM3u = type === 'm3u' || (type === 'auto' && (url.toLowerCase().includes('.m3u') || textData.startsWith('#EXTM3U')));
+                if (isM3u) processM3uImport(textData); else processTxtImport(textData);
                 document.getElementById('importUrlModal').classList.add('hidden');
             } catch (err) {
-                alert("Error saat mengunduh data: \n" + err.message + "\n\nPastikan URL valid atau gunakan proxy VPN jika diblokir jaringan.");
-            } finally {
-                btn.innerText = "AMBIL DATA"; btn.disabled = false;
-            }
+                alert("Error: " + err.message);
+            } finally { btn.innerText = "AMBIL DATA"; btn.disabled = false; }
         }
 
         function exportData() { 
             if(!galleryData.length) return; 
-            const fileName = prompt("Nama file backup TXT:", `MyGallery_${new Date().toISOString().split('T')[0]}`); 
-            if(!fileName) return; 
-            
             const jsonStr = JSON.stringify({ app: "MyGalleryPro", data: galleryData }, null, 2);
             const blob = new Blob([jsonStr], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a'); a.href = url; a.download = fileName + ".txt"; a.click(); 
+            const a = document.createElement('a'); a.href = url; a.download = `MyGallery_${new Date().toISOString().split('T')[0]}.txt`; a.click(); 
             URL.revokeObjectURL(url);
         }
 
-        function importData(e) { 
-            const f = e.target.files[0]; if(!f) return; 
-            const r = new FileReader(); 
-            r.onload = ev => { processTxtImport(ev.target.result); }; 
-            r.readAsText(f); e.target.value = ''; 
-        }
-
-        function importM3uData(e) {
-            const f = e.target.files[0]; if(!f) return;
-            const r = new FileReader();
-            r.onload = ev => { processM3uImport(ev.target.result); }; 
-            r.readAsText(f); e.target.value = ''; 
-        }
-
+        function importData(e) { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = ev => { processTxtImport(ev.target.result); }; r.readAsText(f); e.target.value = ''; }
+        function importM3uData(e) { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = ev => { processM3uImport(ev.target.result); }; r.readAsText(f); e.target.value = ''; }
         function openBulkModal() { document.getElementById('bulkForm').reset(); document.getElementById('bulkModal').classList.remove('hidden'); }
         document.getElementById('txtFileInput').addEventListener('change', function(e) { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = evt => { const t = document.getElementById('bulkTextarea'); t.value = (t.value + '\n' + evt.target.result).trim(); }; r.readAsText(f); });
         
@@ -786,20 +803,13 @@
             const rawText = document.getElementById('bulkTextarea').value; const category = document.getElementById('bulkCategory').value.trim() || 'Bulk Import'; 
             let tagsArray = document.getElementById('bulkTags').value.trim().split(',').map(t => t.trim()).filter(t => t && t.toLowerCase() !== 'nsfw');
             if (document.getElementById('bulkNsfwCheckbox').checked) tagsArray.push('nsfw'); const finalTags = tagsArray.join(', ');
-
             const urls = rawText.split('\n').map(u => u.trim().replace(/\.gifv(\?.*)?$/i, '.mp4$1')).filter(u => u.startsWith('http')); 
             
-            let added = 0; let updated = 0; let skipped = 0;
+            let newItems = urls.map(url => ({ id: Date.now().toString() + Math.random().toString(36).substr(2, 5), url, type: detectMediaType(url), category, tags: finalTags, notes: '', createdAt: new Date().toISOString() }));
+            let res = smartMergeBulk(newItems);
             
-            urls.forEach(url => { 
-                let newItem = { id: Date.now().toString() + Math.random().toString(36).substr(2, 5), url: url, type: detectMediaType(url), category: category, tags: finalTags, notes: '', createdAt: new Date().toISOString() };
-                let res = smartMergeItem(newItem);
-                if(res.status === 'added') added++;
-                else if(res.status === 'updated') updated++;
-                else skipped++;
-            });
-            if(added > 0 || updated > 0) { saveData(); alert(`Bulk Selesai!\n\nLink baru: ${added}\nLink diperbarui: ${updated}\nDiabaikan: ${skipped}`); }
-            else { alert("Link kosong atau semua link sudah ada di galeri."); }
+            saveData(); 
+            alert(`Bulk Selesai!\n\nBaru: ${res.added} | Diperbarui: ${res.updated} | Diabaikan: ${res.skipped}`);
             document.getElementById('bulkModal').classList.add('hidden');
         });
 
@@ -810,13 +820,10 @@
         function openViewer(id) {
             const item = galleryData.find(i => i.id === id); if(!item || item.type === 'website') return; 
             const content = document.getElementById('viewerContent'); const zoomControl = document.getElementById('zoomControl');
-            
             const viewerEditBtn = document.getElementById('viewerEditBtn');
             viewerEditBtn.onclick = () => { closeViewer(); openModal('edit', id); };
             
-            content.innerHTML = ''; resetPanZoom(); 
-            zoomControl.classList.add('hidden');
-            
+            content.innerHTML = ''; resetPanZoom(); zoomControl.classList.add('hidden');
             if(activeHlsEngine) { activeHlsEngine.destroy(); activeHlsEngine = null; }
             if(activeDashEngine) { activeDashEngine.destroy(); activeDashEngine = null; }
             
@@ -832,26 +839,10 @@
             } 
             else if (item.type === 'youtube') {
                 const ytId = getYoutubeId(item.url);
-                content.innerHTML = `
-                    <div class="relative w-full max-w-5xl aspect-video bg-[#000] flex flex-col items-center justify-center overflow-hidden border border-[#333] shadow-2xl">
-                        <img src="https://img.youtube.com/vi/${ytId}/maxresdefault.jpg" onerror="this.src='https://img.youtube.com/vi/${ytId}/hqdefault.jpg'" class="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm select-none">
-                        <div class="z-10 flex flex-col items-center p-8 text-center bg-black/60 w-full h-full justify-center">
-                            <span class="text-7xl mb-6 text-[#E81123]">▶</span>
-                            <h3 class="text-white text-3xl font-light mb-3 uppercase tracking-widest">YOUTUBE DIBLOKIR OFFLINE</h3>
-                            <p class="text-[#ccc] text-sm mb-10 tracking-wide font-light max-w-lg leading-relaxed">Google menolak pemutaran iframe di dalam aplikasi lokal (file:///). Anda harus membukanya secara langsung.</p>
-                            <a href="${item.url}" target="_blank" class="btn-wp7 bg-[#E81123] text-white px-10 py-4 text-base hover:bg-white hover:text-[#E81123] transition duration-300 shadow-lg border border-[#E81123]">
-                                BUKA DI TAB BARU
-                            </a>
-                        </div>
-                    </div>
-                `;
+                content.innerHTML = `<div class="relative w-full max-w-5xl aspect-video bg-[#000] flex flex-col items-center justify-center overflow-hidden border border-[#333] shadow-2xl"><img src="https://img.youtube.com/vi/${ytId}/maxresdefault.jpg" onerror="this.src='https://img.youtube.com/vi/${ytId}/hqdefault.jpg'" class="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm select-none"><div class="z-10 flex flex-col items-center p-8 text-center bg-black/60 w-full h-full justify-center"><span class="text-7xl mb-6 text-[#E81123]">▶</span><h3 class="text-white text-3xl font-light mb-3 uppercase tracking-widest">YOUTUBE DIALIKKAN</h3><a href="${item.url}" target="_blank" class="btn-wp7 bg-[#E81123] text-white px-10 py-4 text-base hover:bg-white hover:text-[#E81123] transition duration-300 shadow-lg border border-[#E81123]">BUKA TAB BARU</a></div></div>`;
             }
-            else if (item.type === 'video') {
-                content.innerHTML = `<video id="activeMedia" controls autoplay loop class="max-w-full max-h-full outline-none bg-[#111]"><source src="${item.url}"></video>`;
-            }
-            else if (item.type === 'iframe_video') {
-                content.innerHTML = `<iframe class="w-full h-full max-w-6xl bg-[#111]" src="${item.url}" frameborder="0" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
-            }
+            else if (item.type === 'video') content.innerHTML = `<video id="activeMedia" controls autoplay loop class="max-w-full max-h-full outline-none bg-[#111]"><source src="${item.url}"></video>`;
+            else if (item.type === 'iframe_video') content.innerHTML = `<iframe class="w-full h-full max-w-6xl bg-[#111]" src="${item.url}" frameborder="0" allowfullscreen></iframe>`;
             else if (item.type === 'hls') {
                 content.innerHTML = `<video id="activeMedia" controls autoplay class="max-w-full max-h-full bg-[#111] outline-none"></video>`;
                 const videoEl = document.getElementById('activeMedia');
@@ -860,31 +851,19 @@
             }
             else if (item.type === 'dash') {
                 content.innerHTML = `<video id="activeMedia" controls autoplay class="max-w-full max-h-full bg-[#111] outline-none"></video>`;
-                const videoEl = document.getElementById('activeMedia');
-                activeDashEngine = dashjs.MediaPlayer().create();
-                activeDashEngine.initialize(videoEl, item.url, true);
+                const videoEl = document.getElementById('activeMedia'); activeDashEngine = dashjs.MediaPlayer().create(); activeDashEngine.initialize(videoEl, item.url, true);
             }
-            
             document.getElementById('viewerCategory').innerText = item.category || 'UNCATEGORIZED'; document.getElementById('viewerNotes').innerText = item.notes || '';
             document.getElementById('viewerTags').innerHTML = (item.tags || '').split(',').filter(t=>t.trim()).map(t=>`<span class="text-[#0078D7] text-sm mr-4 font-semibold tracking-widest uppercase">#${t.trim()}</span>`).join('');
             document.getElementById('viewerModal').classList.remove('hidden'); document.body.style.overflow = 'hidden';
         }
         
-        function closeViewer() { 
-            document.getElementById('viewerModal').classList.add('hidden'); 
-            document.getElementById('viewerContent').innerHTML = ''; 
-            if(activeHlsEngine) { activeHlsEngine.destroy(); activeHlsEngine = null; } 
-            if(activeDashEngine) { activeDashEngine.destroy(); activeDashEngine = null; } 
-            document.body.style.overflow = 'auto'; 
-            if (document.fullscreenElement) document.exitFullscreen(); 
-        }
-        
+        function closeViewer() { document.getElementById('viewerModal').classList.add('hidden'); document.getElementById('viewerContent').innerHTML = ''; if(activeHlsEngine) { activeHlsEngine.destroy(); activeHlsEngine = null; } if(activeDashEngine) { activeDashEngine.destroy(); activeDashEngine = null; } document.body.style.overflow = 'auto'; if (document.fullscreenElement) document.exitFullscreen(); }
         function toggleNativeFullscreen() { if (!document.fullscreenElement) document.getElementById('viewerModal').requestFullscreen(); else document.exitFullscreen(); }
 
         function openM3uModal() {
             let vData = galleryData.filter(i => ['video','hls','iframe_video','dash'].includes(i.type));
-            if(isSafeMode) { vData = vData.filter(item => !(item.tags || '').toLowerCase().includes('nsfw')); document.getElementById('m3uSafeWarning').innerText = "Safe Mode: Konten NSFW disembunyikan."; } 
-            else { document.getElementById('m3uSafeWarning').innerText = "Uncensored: Semua dieksport."; }
+            if(isSafeMode) vData = vData.filter(item => !(item.tags || '').toLowerCase().includes('nsfw'));
             if(!vData.length) return alert("Tidak ada video.");
             const categories = [...new Set(vData.map(i => i.category || 'Uncategorized'))].sort();
             let html = '';
@@ -904,19 +883,14 @@
             vData.forEach(i => { 
                 let isNsfw = (i.tags || '').toLowerCase().includes('nsfw');
                 let baseName = (i.notes || 'Video').replace(/\n/g, ' ');
-                
                 let otherTags = (i.tags || '').split(',').map(t => t.trim()).filter(t => t && t.toLowerCase() !== 'nsfw');
                 let tagString = otherTags.length > 0 ? ' (#' + otherTags.join(' #') + ')' : '';
-                
                 let channelName = isNsfw ? `[🔞 NSFW] ${baseName}${tagString}` : `${baseName}${tagString}`;
-
                 m3u += `#EXTINF:-1 group-title="${i.category||'Uncategorized'}",${channelName}\n${i.url}\n`; 
             });
-            
             const blob = new Blob([m3u], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = fileName+".m3u"; a.click();
-            URL.revokeObjectURL(url);
+            const a = document.createElement('a'); a.href = url; a.download = fileName+".m3u"; a.click(); URL.revokeObjectURL(url);
             document.getElementById('m3uModal').classList.add('hidden');
         }
 
