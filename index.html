@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visual Bookmark - WP7 Perfect Core</title>
+    <title>Visual Bookmark - WP7 Ultimate Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
@@ -45,9 +45,17 @@
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #333; }
         
         .highlight-item { outline: 4px solid #FFB900; box-shadow: 0 0 20px #FFB900; z-index: 10; transition: outline 0.3s, box-shadow 0.3s; }
+        
+        .server-btn { background: #222; border: 1px solid #444; color: #aaa; padding: 2px 8px; font-size: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .server-btn:hover { background: #444; color: #fff; }
+        .server-btn.active { background: #0078D7; border-color: #0078D7; color: #fff; }
     </style>
 </head>
 <body class="min-h-screen pb-10 flex flex-col" id="bodyWrap">
+
+    <div class="fixed bottom-2 right-4 text-[9px] text-[#444] font-semibold z-50 pointer-events-none uppercase tracking-widest drop-shadow-md">
+        Engine by Sigit Poerwoto & Gemini
+    </div>
 
     <header class="bg-[#000000] pt-6 pb-2 sticky top-0 z-40" id="navWrap">
         <div class="px-6 mx-auto w-full max-w-[1600px]">
@@ -56,78 +64,83 @@
                 <div class="flex items-baseline gap-3">
                     <h1 class="text-xl font-bold uppercase tracking-widest text-[#0078D7]">Gallery<span class="text-[#666] font-normal">WP7</span></h1>
                 </div>
-                <button onclick="toggleSafeMode()" id="safeModeBtn" class="btn-wp7 text-[#107C10] text-xs flex items-center gap-1">
-                    <span class="text-lg leading-none">🛡️</span> SAFE: ON
-                </button>
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleLang()" id="langBtn" class="btn-wp7 text-[#888888] text-xs flex items-center gap-1 border border-[#333] px-2 py-1 hover:border-[#888]">
+                        🌐 ID / EN
+                    </button>
+                    <button onclick="toggleSafeMode()" id="safeModeBtn" class="btn-wp7 text-[#107C10] text-xs flex items-center gap-1">
+                        <span class="text-lg leading-none">🛡️</span> <span data-i18n="safeOn">SAFE: ON</span>
+                    </button>
+                </div>
             </div>
 
             <div class="flex gap-6 overflow-x-auto pb-4 mb-2 no-scrollbar border-b border-[#222]">
-                <button onclick="openModal('add')" class="btn-wp7 text-[#0078D7] whitespace-nowrap">+ LINK</button>
-                <button onclick="openBulkModal()" class="btn-wp7 text-[#5C2D91] whitespace-nowrap">📥 BULK</button>
-                <button onclick="document.getElementById('importM3uFile').click()" class="btn-wp7 text-[#107C10] whitespace-nowrap">📥 IMPORT M3U</button>
+                <button onclick="openModal('add')" class="btn-wp7 text-[#0078D7] whitespace-nowrap" data-i18n="addLink">+ LINK</button>
+                <button onclick="openBulkModal()" class="btn-wp7 text-[#5C2D91] whitespace-nowrap" data-i18n="bulk">📥 BULK</button>
+                <button onclick="document.getElementById('importM3uFile').click()" class="btn-wp7 text-[#107C10] whitespace-nowrap" data-i18n="impM3u">📥 IMPORT M3U</button>
                 <input type="file" id="importM3uFile" accept=".m3u,.m3u8,.txt" class="hidden" onchange="importM3uData(event)">
-                <button onclick="openM3uModal()" class="btn-wp7 text-[#D83B01] whitespace-nowrap">📺 EXPORT M3U</button>
+                <button onclick="openM3uModal()" class="btn-wp7 text-[#D83B01] whitespace-nowrap" data-i18n="expM3u">📺 EXPORT M3U</button>
                 
                 <span class="text-[#444]">|</span>
                 
-                <button onclick="openImportUrlModal()" class="btn-wp7 text-[#0078D7] whitespace-nowrap">☁️ IMPORT URL</button>
-                <button onclick="exportData()" class="btn-wp7 text-[#888888] whitespace-nowrap">⬇️ EXPORT TXT</button>
-                <button onclick="document.getElementById('importFile').click()" class="btn-wp7 text-[#888888] whitespace-nowrap">⬆️ IMPORT TXT</button>
+                <button onclick="openImportUrlModal()" class="btn-wp7 text-[#0078D7] whitespace-nowrap" data-i18n="impUrl">☁️ IMPORT URL</button>
+                <button onclick="exportData()" class="btn-wp7 text-[#888888] whitespace-nowrap" data-i18n="expTxt">⬇️ EXPORT TXT</button>
+                <button onclick="document.getElementById('importFile').click()" class="btn-wp7 text-[#888888] whitespace-nowrap" data-i18n="impTxt">⬆️ IMPORT TXT</button>
                 <input type="file" id="importFile" accept=".txt" class="hidden" onchange="importData(event)">
                 
                 <span class="text-[#444]">|</span>
 
-                <button onclick="openCleanUrlsModal()" class="btn-wp7 text-[#E81123] whitespace-nowrap">🧹 BERSIHKAN URL</button>
-                <button onclick="undoLastAction()" class="btn-wp7 text-[#FFB900] whitespace-nowrap">↩️ UNDO</button>
-                <button onclick="clearCache()" class="btn-wp7 text-[#E81123] whitespace-nowrap">🗑️ RESET</button>
+                <button onclick="openCleanUrlsModal()" class="btn-wp7 text-[#E81123] whitespace-nowrap" data-i18n="cleanUrl">🧹 BERSIHKAN URL</button>
+                <button onclick="undoLastAction()" class="btn-wp7 text-[#FFB900] whitespace-nowrap" data-i18n="undo">↩️ UNDO</button>
+                <button onclick="clearCache()" class="btn-wp7 text-[#E81123] whitespace-nowrap" data-i18n="reset">🗑️ RESET</button>
             </div>
 
             <div class="flex gap-6 overflow-x-auto no-scrollbar pt-2 mb-4">
-                <span id="tab-all" onclick="setMediaFilter('all')" class="pivot-active">semua</span>
-                <span id="tab-image" onclick="setMediaFilter('image')" class="pivot-inactive">gambar</span>
-                <span id="tab-video" onclick="setMediaFilter('video')" class="pivot-inactive">video</span>
-                <span id="tab-website" onclick="setMediaFilter('website')" class="pivot-inactive">web</span>
+                <span id="tab-all" onclick="setMediaFilter('all')" class="pivot-active" data-i18n="tabAll">semua</span>
+                <span id="tab-image" onclick="setMediaFilter('image')" class="pivot-inactive" data-i18n="tabImage">gambar</span>
+                <span id="tab-video" onclick="setMediaFilter('video')" class="pivot-inactive" data-i18n="tabVideo">video</span>
+                <span id="tab-website" onclick="setMediaFilter('website')" class="pivot-inactive" data-i18n="tabWeb">web</span>
             </div>
 
             <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 bg-[#111111] p-3">
                 <div class="relative w-full xl:w-1/4 flex-shrink-0">
-                    <input type="text" id="searchInput" placeholder="Gunakan spasi untuk multi-kata..." class="w-full p-2 text-sm bg-[#000] border-none">
+                    <input type="text" id="searchInput" data-i18n-ph="phSearch" placeholder="Gunakan spasi untuk multi-kata..." class="w-full p-2 text-sm bg-[#000] border-none">
                     <button onclick="clearSearch()" class="absolute right-3 top-2 text-[#666] hover:text-white font-bold">✕</button>
                 </div>
                 
                 <div class="flex flex-wrap items-center gap-3 text-xs font-bold text-[#888] w-full xl:w-auto justify-start xl:justify-end">
                     <label class="flex items-center gap-2 cursor-pointer hover:text-white transition">
-                        <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()" class="w-4 h-4 accent-[#0078D7] rounded-none"> PILIH SEMUA
+                        <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()" class="w-4 h-4 accent-[#0078D7] rounded-none"> <span data-i18n="selectAll">PILIH SEMUA</span>
                     </label>
                     
                     <div id="bulkActions" class="hidden items-center gap-3 border-l border-[#444] pl-3">
-                        <span class="text-[#0078D7]"><span id="selectedCount">0</span> ITEM:</span>
-                        <button onclick="deleteSelected()" class="btn-wp7 text-[#E81123] whitespace-nowrap hover:text-white transition">HAPUS</button>
+                        <span class="text-[#0078D7]"><span id="selectedCount">0</span> <span data-i18n="itemLabel">ITEM:</span></span>
+                        <button onclick="deleteSelected()" class="btn-wp7 text-[#E81123] whitespace-nowrap hover:text-white transition" data-i18n="del">HAPUS</button>
                         <button onclick="markSelectedNsfw(true)" class="btn-wp7 text-[#D83B01] whitespace-nowrap hover:text-white transition">+NSFW</button>
                         <button onclick="markSelectedNsfw(false)" class="btn-wp7 text-[#107C10] whitespace-nowrap hover:text-white transition">-NSFW</button>
-                        <button onclick="markSelectedCategory('TV')" class="btn-wp7 text-[#0078D7] whitespace-nowrap hover:text-white transition">📺 SET TV</button>
+                        <button onclick="markSelectedCategory('TV')" class="btn-wp7 text-[#0078D7] whitespace-nowrap hover:text-white transition" data-i18n="setTv">📺 SET TV</button>
                     </div>
                     
-                    <span class="border-l border-[#444] pl-3 whitespace-nowrap"><span id="itemCount" class="text-white">0</span> ITEM</span>
+                    <span class="border-l border-[#444] pl-3 whitespace-nowrap"><span id="itemCount" class="text-white">0</span> <span data-i18n="item">ITEM</span></span>
                     
                     <select id="sortSelect" onchange="renderGallery()" class="p-1 bg-transparent border-none text-[#0078D7] font-bold cursor-pointer outline-none">
-                        <option value="newest">TERBARU</option>
-                        <option value="oldest">TERLAMA</option>
-                        <option value="category">KATEGORI</option>
+                        <option value="newest" data-i18n="optNew">TERBARU</option>
+                        <option value="oldest" data-i18n="optOld">TERLAMA</option>
+                        <option value="category" data-i18n="optCat">KATEGORI</option>
                     </select>
 
                     <div class="flex items-center gap-1 border-l border-[#444] pl-3">
                         <button onclick="changePage(-1)" class="btn-wp7 bg-[#222] text-[#0078D7] hover:bg-[#0078D7] hover:text-white px-2 py-1 text-lg leading-none transition-colors border border-[#333]">&lt;</button>
-                        <span class="text-[10px] font-bold text-[#888] tracking-widest pl-1">HAL</span>
+                        <span class="text-[10px] font-bold text-[#888] tracking-widest pl-1" data-i18n="lblHal">HAL</span>
                         <input type="number" id="pageInput" onchange="jumpToPage(this.value)" value="1" min="1" class="w-10 text-center bg-[#000] text-white border border-[#444] text-[10px] font-bold outline-none focus:border-[#0078D7] py-1 mx-1">
                         <span id="maxPageInfo" class="text-[10px] font-bold text-[#888] whitespace-nowrap tracking-widest">/ 1</span>
                         <button onclick="changePage(1)" class="btn-wp7 bg-[#222] text-[#0078D7] hover:bg-[#0078D7] hover:text-white px-2 py-1 text-lg leading-none transition-colors border border-[#333]">&gt;</button>
-                        <button onclick="refreshThumbnails()" class="btn-wp7 text-[#107C10] hover:text-white text-lg leading-none transition-colors ml-2 px-1" title="Refresh Thumbnail">🔄</button>
+                        <button onclick="refreshThumbnails()" class="btn-wp7 text-[#107C10] hover:text-white text-lg leading-none transition-colors ml-2 px-1" title="Refresh">🔄</button>
                     </div>
 
                     <div class="flex items-center gap-2 border-l border-[#444] pl-3">
-                        <input type="number" id="itemJumpInput" placeholder="No. Item" onkeydown="if(event.key==='Enter') jumpToItem()" class="w-16 text-center bg-[#000] text-[#FFB900] border border-[#444] text-[10px] font-bold outline-none focus:border-[#FFB900] py-1">
-                        <button onclick="jumpToItem()" class="btn-wp7 text-[#FFB900] hover:text-white transition">LOMPAT</button>
+                        <input type="number" id="itemJumpInput" data-i18n-ph="phJump" placeholder="No. Item" onkeydown="if(event.key==='Enter') jumpToItem()" class="w-16 text-center bg-[#000] text-[#FFB900] border border-[#444] text-[10px] font-bold outline-none focus:border-[#FFB900] py-1">
+                        <button onclick="jumpToItem()" class="btn-wp7 text-[#FFB900] hover:text-white transition" data-i18n="btnJump">LOMPAT</button>
                     </div>
                 </div>
             </div>
@@ -140,15 +153,25 @@
     </main>
 
     <div id="viewerModal" class="hidden fixed inset-0 bg-[#000000] z-[100] flex flex-col transition-all duration-300 overflow-hidden">
+        
+        <div id="fallbackBanner" class="hidden absolute top-20 left-1/2 transform -translate-x-1/2 bg-[#D83B01] text-white px-5 py-3 rounded-none z-[200] flex items-center gap-6 shadow-2xl border border-white/20">
+            <span class="text-sm font-light tracking-wide" data-i18n="warnFallback">⚠️ URL Utama Error. Memutar <span id="fallbackServerNum" class="font-bold"></span>.</span>
+            <button onclick="promoteCurrentUrl()" class="btn-wp7 bg-black text-[#FFB900] hover:bg-[#FFB900] hover:text-black px-4 py-2 border border-[#FFB900] transition-colors" data-i18n="btnPromote">Jadikan Utama & Hapus Lama</button>
+        </div>
+
         <div class="flex justify-between items-center p-6 text-white absolute top-0 w-full z-20 bg-gradient-to-b from-black to-transparent">
             <div class="flex items-center gap-6">
                 <span id="viewerCategory" class="text-[#0078D7] text-sm font-bold uppercase tracking-widest"></span>
                 <div id="zoomControl" class="hidden items-center gap-3">
-                    <span class="text-xs font-bold text-[#666]">ZOOM</span>
+                    <span class="text-xs font-bold text-[#666]" data-i18n="lblZoom">ZOOM</span>
                     <input type="range" id="zoomSlider" min="1" max="5" step="0.1" value="1" class="w-32">
                 </div>
-                <button id="viewerEditBtn" class="btn-wp7 text-[#FFB900] hover:text-white hidden md:block border border-[#FFB900] px-3 py-1">✏️ EDIT INFO</button>
-                <button onclick="toggleNativeFullscreen()" class="btn-wp7 text-white hover:text-[#0078D7] hidden md:block">⛶ FULLSCREEN</button>
+                
+                <div id="serverSelector" class="hidden items-center gap-2 mr-2 border-l border-[#333] pl-4"></div>
+
+                <button onclick="deleteFromViewer()" class="btn-wp7 text-[#E81123] hover:text-white hidden md:block border border-[#E81123] px-3 py-1" data-i18n="btnDel">🗑️ HAPUS</button>
+                <button id="viewerEditBtn" class="btn-wp7 text-[#FFB900] hover:text-white hidden md:block border border-[#FFB900] px-3 py-1" data-i18n="btnEdit">✏️ EDIT</button>
+                <button onclick="toggleNativeFullscreen()" class="btn-wp7 text-white hover:text-[#0078D7] hidden md:block" data-i18n="btnFull">⛶ FULLSCREEN</button>
             </div>
             <button onclick="closeViewer()" class="text-5xl font-light hover:text-[#D83B01] leading-none">&times;</button>
         </div>
@@ -159,173 +182,227 @@
         </div>
     </div>
 
+    <div id="formModal" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center p-6 z-50 overflow-y-auto">
+        <div class="bg-[#111111] border-2 border-[#333333] w-full max-w-md p-8 my-auto">
+            <h2 id="modalTitle" class="text-2xl font-light mb-6 text-white uppercase tracking-wider" data-i18n="titleAdd">Simpan Link</h2>
+            <form id="mediaForm" class="space-y-4">
+                <input type="hidden" id="editId">
+                <input type="url" id="urlInput" required data-i18n-ph="phUrl" placeholder="URL Utama (Wajib)..." class="w-full p-3 bg-[#000] border border-[#444] outline-none focus:border-[#0078D7] text-white">
+                
+                <div class="space-y-2 border border-[#333] p-3 bg-[#0a0a0a]">
+                    <span class="text-[10px] font-bold text-[#888] tracking-widest uppercase" data-i18n="lblAlt">Server Cadangan (Opsional):</span>
+                    <input type="url" id="altUrl1Input" data-i18n-ph="phAlt1" placeholder="URL Alternatif 1..." class="w-full p-2 bg-[#000] border border-[#333] outline-none focus:border-[#FFB900] text-[#ccc] text-sm">
+                    <input type="url" id="altUrl2Input" data-i18n-ph="phAlt2" placeholder="URL Alternatif 2..." class="w-full p-2 bg-[#000] border border-[#333] outline-none focus:border-[#FFB900] text-[#ccc] text-sm">
+                    <input type="url" id="altUrl3Input" data-i18n-ph="phAlt3" placeholder="URL Alternatif 3..." class="w-full p-2 bg-[#000] border border-[#333] outline-none focus:border-[#FFB900] text-[#ccc] text-sm">
+                </div>
+
+                <select id="typeOverride" class="w-full p-3 bg-[#000] border border-[#444] outline-none text-[#aaa] focus:border-[#0078D7]">
+                    <option value="auto" data-i18n="optAuto">Deteksi Otomatis (Media)</option>
+                    <option value="website" data-i18n="optForceWeb">Paksa Tipe: Website / Artikel</option>
+                </select>
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="categoryInput" data-i18n-ph="phCat" placeholder="Kategori" class="w-full p-3 bg-[#000] border border-[#444] outline-none focus:border-[#0078D7] text-white">
+                    <input type="text" id="tagsInput" data-i18n-ph="phTags" placeholder="Tags (Selain NSFW)" class="w-full p-3 bg-[#000] border border-[#444] outline-none focus:border-[#0078D7] text-white">
+                </div>
+                <textarea id="notesInput" rows="2" data-i18n-ph="phNotes" placeholder="Catatan" class="w-full p-3 bg-[#000] border border-[#444] outline-none focus:border-[#0078D7] text-white"></textarea>
+                <label class="flex items-center gap-3 text-xs font-bold tracking-widest text-[#D83B01] p-4 border border-[#333333] bg-[#000000] cursor-pointer hover:border-[#D83B01] transition">
+                    <input type="checkbox" id="nsfwCheckbox" class="w-5 h-5 accent-[#D83B01] cursor-pointer rounded-none">
+                    <span data-i18n="lblNsfw">TANDAI NSFW (PRIVATE)</span>
+                </label>
+                
+                <div class="flex justify-between w-full pt-2 items-center">
+                    <div class="flex gap-8">
+                        <button type="submit" class="btn-wp7 text-[#0078D7] text-sm" data-i18n="btnSave">SIMPAN</button>
+                        <button type="button" onclick="document.getElementById('formModal').classList.add('hidden')" class="btn-wp7 text-[#888888] text-sm" data-i18n="btnCancel">BATAL</button>
+                    </div>
+                    <button type="button" id="formDeleteBtn" onclick="deleteFromEdit()" class="btn-wp7 text-[#E81123] text-sm hidden" data-i18n="btnDel">🗑️ HAPUS</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="m3uModal" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center p-6 z-50">
         <div class="bg-[#111111] border-2 border-[#333333] w-full max-w-md p-8">
-            <h2 class="text-2xl font-light mb-2 text-white uppercase tracking-wider">Export M3U</h2>
-            <p class="text-xs text-[#888888] mb-6">Pilih kategori. <i id="m3uSafeWarning" class="text-[#D83B01]"></i></p>
+            <h2 class="text-2xl font-light mb-2 text-white uppercase tracking-wider" data-i18n="titleExpM3u">Export M3U</h2>
+            <p class="text-xs text-[#888888] mb-6"><span data-i18n="lblChooseCat">Pilih kategori.</span> <i id="m3uSafeWarning" class="text-[#D83B01]"></i></p>
             <input type="text" id="m3uFileName" value="My_TV_Playlist" class="w-full p-3 mb-6 bg-[#000] border border-[#444] outline-none text-white focus:border-[#D83B01]">
             <div id="m3uCheckboxContainer" class="border border-[#333] p-4 max-h-48 overflow-y-auto space-y-3 mb-8 bg-[#000]"></div>
             <div class="flex gap-8">
-                <button onclick="executeM3uExport()" class="btn-wp7 text-[#D83B01] text-sm">UNDUH FILE</button>
-                <button onclick="document.getElementById('m3uModal').classList.add('hidden')" class="btn-wp7 text-[#888888] text-sm">BATAL</button>
+                <button onclick="executeM3uExport()" class="btn-wp7 text-[#D83B01] text-sm" data-i18n="btnDl">UNDUH FILE</button>
+                <button onclick="document.getElementById('m3uModal').classList.add('hidden')" class="btn-wp7 text-[#888888] text-sm" data-i18n="btnCancel">BATAL</button>
             </div>
         </div>
     </div>
 
     <div id="cleanUrlsModal" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center p-6 z-50">
         <div class="bg-[#111111] border-2 border-[#333333] w-full max-w-md p-8">
-            <h2 class="text-2xl font-light mb-4 text-[#E81123] uppercase tracking-wider">🧹 Sapu Bersih URL</h2>
-            <p class="text-xs text-[#888888] mb-6 leading-relaxed">Masukkan awalan URL/domain (contoh: <code class="text-white">https://vip1.slbfsl.com</code>). Sistem akan membasmi semua link yang berawalan atau mengandung teks tersebut.</p>
-            <input type="text" id="cleanPatternInput" placeholder="Contoh: https://vip1.slbfsl.com" class="w-full p-3 mb-6 bg-[#000] border border-[#444] text-white outline-none focus:border-[#E81123]">
+            <h2 class="text-2xl font-light mb-4 text-[#E81123] uppercase tracking-wider" data-i18n="titleClean">🧹 Sapu Bersih URL</h2>
+            <p class="text-xs text-[#888888] mb-6 leading-relaxed" data-i18n="descClean">Masukkan awalan URL/domain. Sistem akan menyelamatkan data dengan URL Alt, dan membuang link mati.</p>
+            <input type="text" id="cleanPatternInput" data-i18n-ph="phClean" placeholder="Contoh: vip1.slbfsl.com" class="w-full p-3 mb-6 bg-[#000] border border-[#444] text-white outline-none focus:border-[#E81123]">
             <div class="flex gap-8">
-                <button onclick="executeInAppUrlClean()" class="btn-wp7 text-[#E81123] text-sm">SAPU BERSIH</button>
-                <button onclick="document.getElementById('cleanUrlsModal').classList.add('hidden')" class="btn-wp7 text-[#888888] text-sm">BATAL</button>
+                <button onclick="executeInAppUrlClean()" class="btn-wp7 text-[#E81123] text-sm" data-i18n="btnClean">SAPU BERSIH</button>
+                <button onclick="document.getElementById('cleanUrlsModal').classList.add('hidden')" class="btn-wp7 text-[#888888] text-sm" data-i18n="btnCancel">BATAL</button>
             </div>
         </div>
     </div>
 
     <div id="importUrlModal" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center p-6 z-50">
         <div class="bg-[#111111] border-2 border-[#333333] w-full max-w-xl p-8">
-            <h2 class="text-2xl font-light mb-4 text-white uppercase tracking-wider text-[#0078D7]">☁️ Import dari URL</h2>
-            <p class="text-xs text-[#888888] mb-6 tracking-wide leading-relaxed">Ambil file database TXT (JSON) atau Playlist M3U langsung dari situs web (seperti Raw Github). Sistem ini dilengkapi Auto-Proxy untuk menembus jaringan.</p>
+            <h2 class="text-2xl font-light mb-4 text-white uppercase tracking-wider text-[#0078D7]" data-i18n="titleImpUrl">☁️ Import dari URL</h2>
+            <p class="text-xs text-[#888888] mb-6 tracking-wide leading-relaxed" data-i18n="descImpUrl">Ambil file database TXT (JSON) atau Playlist M3U langsung dari situs web. Auto-Proxy tertanam.</p>
             <input type="url" id="importUrlInput" placeholder="https://raw.githubusercontent.com/..." class="w-full p-4 mb-4 bg-[#000] border border-[#444] text-white outline-none focus:border-[#0078D7]">
             <select id="importUrlType" class="w-full p-4 mb-8 bg-[#000] border border-[#444] text-[#aaa] outline-none focus:border-[#0078D7] cursor-pointer">
-                <option value="auto">Deteksi Otomatis (.txt / .m3u)</option>
-                <option value="txt">Paksa format TXT Database (JSON)</option>
-                <option value="m3u">Paksa format M3U Playlist</option>
+                <option value="auto" data-i18n="optImpAuto">Deteksi Otomatis (.txt / .m3u)</option>
+                <option value="txt" data-i18n="optImpTxt">Paksa format TXT Database (JSON)</option>
+                <option value="m3u" data-i18n="optImpM3u">Paksa format M3U Playlist</option>
             </select>
             <div class="flex gap-8">
-                <button onclick="executeUrlImport()" class="btn-wp7 text-[#0078D7] text-sm" id="btnExecuteUrl">AMBIL DATA</button>
-                <button onclick="document.getElementById('importUrlModal').classList.add('hidden')" class="btn-wp7 text-[#888888] text-sm">BATAL</button>
+                <button onclick="executeUrlImport()" class="btn-wp7 text-[#0078D7] text-sm" id="btnExecuteUrl" data-i18n="btnFetch">AMBIL DATA</button>
+                <button onclick="document.getElementById('importUrlModal').classList.add('hidden')" class="btn-wp7 text-[#888888] text-sm" data-i18n="btnCancel">BATAL</button>
             </div>
-        </div>
-    </div>
-
-    <div id="formModal" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center p-6 z-50">
-        <div class="bg-[#111111] border-2 border-[#333333] w-full max-w-md p-8">
-            <h2 id="modalTitle" class="text-2xl font-light mb-8 text-white uppercase tracking-wider">Simpan Link</h2>
-            <form id="mediaForm" class="space-y-5">
-                <input type="hidden" id="editId">
-                <input type="url" id="urlInput" required placeholder="Paste Link di sini..." class="w-full p-3 bg-[#000] border border-[#444] outline-none focus:border-[#0078D7] text-white">
-                <select id="typeOverride" class="w-full p-3 bg-[#000] border border-[#444] outline-none text-[#aaa] focus:border-[#0078D7]">
-                    <option value="auto">Deteksi Otomatis (Media)</option>
-                    <option value="website">Paksa Tipe: Website / Artikel</option>
-                </select>
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="text" id="categoryInput" placeholder="Kategori" class="w-full p-3 bg-[#000] border border-[#444] outline-none focus:border-[#0078D7] text-white">
-                    <input type="text" id="tagsInput" placeholder="Tags (Selain NSFW)" class="w-full p-3 bg-[#000] border border-[#444] outline-none focus:border-[#0078D7] text-white">
-                </div>
-                <textarea id="notesInput" rows="2" placeholder="Catatan" class="w-full p-3 bg-[#000] border border-[#444] outline-none focus:border-[#0078D7] text-white"></textarea>
-                <label class="flex items-center gap-3 text-xs font-bold tracking-widest text-[#D83B01] p-4 border border-[#333333] bg-[#000000] cursor-pointer hover:border-[#D83B01] transition">
-                    <input type="checkbox" id="nsfwCheckbox" class="w-5 h-5 accent-[#D83B01] cursor-pointer rounded-none">
-                    TANDAI NSFW (PRIVATE)
-                </label>
-                <div class="flex gap-8 pt-4">
-                    <button type="submit" class="btn-wp7 text-[#0078D7] text-sm">SIMPAN</button>
-                    <button type="button" onclick="document.getElementById('formModal').classList.add('hidden')" class="btn-wp7 text-[#888888] text-sm">BATAL</button>
-                </div>
-            </form>
         </div>
     </div>
 
     <div id="bulkModal" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center p-6 z-50">
         <div class="bg-[#111111] border-2 border-[#333333] w-full max-w-2xl p-8">
-            <h2 class="text-2xl font-light mb-8 text-white uppercase tracking-wider">Bulk Import</h2>
+            <h2 class="text-2xl font-light mb-8 text-white uppercase tracking-wider" data-i18n="titleBulk">Bulk Import</h2>
             <form id="bulkForm" class="space-y-5">
                 <div class="flex items-center gap-4 bg-[#000000] p-3 border border-[#444]">
-                    <label class="text-xs font-bold text-[#888] tracking-widest">FILE .TXT:</label>
+                    <label class="text-xs font-bold text-[#888] tracking-widest" data-i18n="lblTxt">FILE .TXT:</label>
                     <input type="file" id="txtFileInput" accept=".txt" class="text-xs text-white border-none bg-transparent">
                 </div>
-                <textarea id="bulkTextarea" required rows="6" placeholder="Paste link per baris..." class="w-full p-4 bg-[#000] border border-[#444] text-sm outline-none focus:border-[#5C2D91] whitespace-pre text-white"></textarea>
+                <textarea id="bulkTextarea" required rows="6" data-i18n-ph="phBulk" placeholder="Paste link per baris..." class="w-full p-4 bg-[#000] border border-[#444] text-sm outline-none focus:border-[#5C2D91] whitespace-pre text-white"></textarea>
                 <div class="grid grid-cols-2 gap-4">
-                    <input type="text" id="bulkCategory" placeholder="Kategori Batch" class="w-full p-3 bg-[#000] border border-[#444] outline-none focus:border-[#5C2D91] text-white">
-                    <input type="text" id="bulkTags" placeholder="Tags Batch" class="w-full p-3 bg-[#000] border border-[#444] outline-none focus:border-[#5C2D91] text-white">
+                    <input type="text" id="bulkCategory" data-i18n-ph="phBulkCat" placeholder="Kategori Batch" class="w-full p-3 bg-[#000] border border-[#444] outline-none focus:border-[#5C2D91] text-white">
+                    <input type="text" id="bulkTags" data-i18n-ph="phBulkTags" placeholder="Tags Batch" class="w-full p-3 bg-[#000] border border-[#444] outline-none focus:border-[#5C2D91] text-white">
                 </div>
                 <label class="flex items-center gap-3 text-xs font-bold tracking-widest text-[#D83B01] p-4 border border-[#333333] bg-[#000000] cursor-pointer hover:border-[#D83B01] transition">
                     <input type="checkbox" id="bulkNsfwCheckbox" class="w-5 h-5 accent-[#D83B01] cursor-pointer rounded-none">
-                    TANDAI SEMUA NSFW
+                    <span data-i18n="lblBulkNsfw">TANDAI SEMUA NSFW</span>
                 </label>
                 <div class="flex gap-8 pt-4">
-                    <button type="submit" class="btn-wp7 text-[#5C2D91] text-sm">PROSES</button>
-                    <button type="button" onclick="document.getElementById('bulkModal').classList.add('hidden')" class="btn-wp7 text-[#888888] text-sm">BATAL</button>
+                    <button type="submit" class="btn-wp7 text-[#5C2D91] text-sm" data-i18n="btnProc">PROSES</button>
+                    <button type="button" onclick="document.getElementById('bulkModal').classList.add('hidden')" class="btn-wp7 text-[#888888] text-sm" data-i18n="btnCancel">BATAL</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
+        // --- TRANSLATION ENGINE ---
+        const i18n = {
+            id: {
+                safeOn: "SAFE: ON", safeOff: "UNSAFE: OFF",
+                addLink: "+ LINK", bulk: "📥 BULK", impM3u: "📥 IMPORT M3U", expM3u: "📺 EXPORT M3U",
+                impUrl: "☁️ IMPORT URL", expTxt: "⬇️ EXPORT TXT", impTxt: "⬆️ IMPORT TXT",
+                cleanUrl: "🧹 BERSIHKAN URL", undo: "↩️ UNDO", reset: "🗑️ RESET",
+                tabAll: "semua", tabImage: "gambar", tabVideo: "video", tabWeb: "web",
+                phSearch: "Gunakan spasi untuk multi-kata...", selectAll: "PILIH SEMUA",
+                item: "ITEM", itemLabel: "ITEM:", del: "HAPUS", setTv: "📺 SET TV",
+                optNew: "TERBARU", optOld: "TERLAMA", optCat: "KATEGORI",
+                lblHal: "HAL", phJump: "No. Item", btnJump: "LOMPAT",
+                lblZoom: "ZOOM", btnDel: "🗑️ HAPUS", btnEdit: "✏️ EDIT", btnFull: "⛶ FULLSCREEN",
+                titleAdd: "Simpan Link", phUrl: "URL Utama (Wajib)...", lblAlt: "Server Cadangan (Opsional):",
+                phAlt1: "URL Alternatif 1...", phAlt2: "URL Alternatif 2...", phAlt3: "URL Alternatif 3...",
+                optAuto: "Deteksi Otomatis (Media)", optForceWeb: "Paksa Tipe: Website / Artikel",
+                phCat: "Kategori", phTags: "Tags (Selain NSFW)", phNotes: "Catatan",
+                lblNsfw: "TANDAI NSFW (PRIVATE)", btnSave: "SIMPAN", btnCancel: "BATAL",
+                titleBulk: "Bulk Import", lblTxt: "FILE .TXT:", phBulk: "Paste link per baris...",
+                phBulkCat: "Kategori Batch", phBulkTags: "Tags Batch", lblBulkNsfw: "TANDAI SEMUA NSFW",
+                btnProc: "PROSES", titleExpM3u: "Export M3U", lblChooseCat: "Pilih kategori.", btnDl: "UNDUH FILE",
+                titleClean: "🧹 Sapu Bersih URL", descClean: "Masukkan awalan URL/domain. Sistem Pintar akan menyelamatkan data via URL Alt.", phClean: "Contoh: vip1.slbfsl.com",
+                btnClean: "SAPU BERSIH", titleImpUrl: "☁️ Import dari URL", descImpUrl: "Ambil file database TXT (JSON) langsung dari situs web.",
+                optImpAuto: "Deteksi Otomatis (.txt / .m3u)", optImpTxt: "Paksa format TXT Database (JSON)",
+                optImpM3u: "Paksa format M3U Playlist", btnFetch: "AMBIL DATA", warnFallback: "⚠️ URL Utama Error. Memutar ", btnPromote: "Jadikan Utama & Hapus Lama"
+            },
+            en: {
+                safeOn: "SAFE: ON", safeOff: "UNSAFE: OFF",
+                addLink: "+ LINK", bulk: "📥 BULK", impM3u: "📥 IMPORT M3U", expM3u: "📺 EXPORT M3U",
+                impUrl: "☁️ IMPORT URL", expTxt: "⬇️ EXPORT TXT", impTxt: "⬆️ IMPORT TXT",
+                cleanUrl: "🧹 CLEAN URLS", undo: "↩️ UNDO", reset: "🗑️ RESET",
+                tabAll: "all", tabImage: "image", tabVideo: "video", tabWeb: "web",
+                phSearch: "Use space for multi-words...", selectAll: "SELECT ALL",
+                item: "ITEMS", itemLabel: "ITEMS:", del: "DELETE", setTv: "📺 SET TV",
+                optNew: "NEWEST", optOld: "OLDEST", optCat: "CATEGORY",
+                lblHal: "PAGE", phJump: "Item No.", btnJump: "JUMP",
+                lblZoom: "ZOOM", btnDel: "🗑️ DELETE", btnEdit: "✏️ EDIT", btnFull: "⛶ FULLSCREEN",
+                titleAdd: "Save Link", phUrl: "Main URL (Required)...", lblAlt: "Backup Servers (Optional):",
+                phAlt1: "Alternative URL 1...", phAlt2: "Alternative URL 2...", phAlt3: "Alternative URL 3...",
+                optAuto: "Auto Detect (Media)", optForceWeb: "Force Type: Website / Article",
+                phCat: "Category", phTags: "Tags (Except NSFW)", phNotes: "Notes",
+                lblNsfw: "MARK NSFW (PRIVATE)", btnSave: "SAVE", btnCancel: "CANCEL",
+                titleBulk: "Bulk Import", lblTxt: "TXT FILE:", phBulk: "Paste links line by line...",
+                phBulkCat: "Batch Category", phBulkTags: "Batch Tags", lblBulkNsfw: "MARK ALL NSFW",
+                btnProc: "PROCESS", titleExpM3u: "Export M3U", lblChooseCat: "Select categories.", btnDl: "DOWNLOAD FILE",
+                titleClean: "🧹 Clean URLs", descClean: "Enter URL prefix or domain. Smart System will save data via Alt URLs.", phClean: "Example: vip1.slbfsl.com",
+                btnClean: "CLEAN UP", titleImpUrl: "☁️ Import from URL", descImpUrl: "Fetch TXT (JSON) database directly from a website.",
+                optImpAuto: "Auto Detect (.txt / .m3u)", optImpTxt: "Force TXT Database (JSON) format",
+                optImpM3u: "Force M3U Playlist format", btnFetch: "FETCH DATA", warnFallback: "⚠️ Main URL Error. Playing ", btnPromote: "Make Main & Delete Old"
+            }
+        };
+
+        let currentLang = localStorage.getItem('wp7Lang') || 'id';
+
+        function applyLang() {
+            const t = i18n[currentLang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                if (t[el.getAttribute('data-i18n')]) el.childNodes[0].nodeValue = t[el.getAttribute('data-i18n')];
+            });
+            document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+                if (t[el.getAttribute('data-i18n-ph')]) el.setAttribute('placeholder', t[el.getAttribute('data-i18n-ph')]);
+            });
+            document.getElementById('langBtn').innerText = currentLang === 'id' ? '🌐 ID / EN' : '🌐 EN / ID';
+            document.querySelector('[data-i18n="safeOn"]').nodeValue = isSafeMode ? t.safeOn : t.safeOff;
+        }
+
+        function toggleLang() {
+            currentLang = currentLang === 'id' ? 'en' : 'id';
+            localStorage.setItem('wp7Lang', currentLang);
+            applyLang();
+        }
+
+        function tA(idMsg, enMsg) { alert(currentLang === 'en' ? enMsg : idMsg); }
+        function tC(idMsg, enMsg) { return confirm(currentLang === 'en' ? enMsg : idMsg); }
+
+        // --- CORE LOGIC ---
         let galleryData = JSON.parse(localStorage.getItem('smartGalleryData')) || [];
-        
         let needsSave = false;
         galleryData = galleryData.map(item => {
             if (item.url && item.url.toLowerCase().includes('.gifv')) {
-                item.url = item.url.replace(/\.gifv(\?.*)?$/i, '.mp4$1');
-                item.type = 'video';
-                needsSave = true;
-            }
-            return item;
+                item.url = item.url.replace(/\.gifv(\?.*)?$/i, '.mp4$1'); item.type = 'video'; needsSave = true;
+            } return item;
         });
-        if (needsSave) {
-            localStorage.setItem('smartGalleryData', JSON.stringify(galleryData));
-        }
+        if (needsSave) { localStorage.setItem('smartGalleryData', JSON.stringify(galleryData)); }
 
         const grid = document.getElementById('galleryGrid');
-        let activeHlsEngine = null; 
-        let activeDashEngine = null; 
-        
-        let isSafeMode = true;
-        let currentMediaFilter = 'all';
+        let isSafeMode = true; let currentMediaFilter = 'all';
         let currentScale = 1; let isPanning = false; let panX = 0, panY = 0; let startPanX = 0, startPanY = 0;
+        let currentPage = 1; const itemsPerPage = 60; let filteredDataLength = 0;
 
-        let currentPage = 1;
-        const itemsPerPage = 60; 
-        let filteredDataLength = 0;
+        let activeHlsEngine = null; let activeDashEngine = null; 
+        let viewerActiveItemId = null; let viewerItemUrls = []; let viewerCurrentUrlIndex = 0;
 
-        function refreshThumbnails() {
-            renderGallery(document.getElementById('searchInput').value, true);
-        }
+        document.addEventListener('DOMContentLoaded', applyLang);
 
+        function refreshThumbnails() { renderGallery(document.getElementById('searchInput').value, true); }
         function changePage(direction) {
             const maxPage = Math.ceil(filteredDataLength / itemsPerPage) || 1;
-            currentPage += direction;
-            if (currentPage < 1) currentPage = 1;
-            if (currentPage > maxPage) currentPage = maxPage;
-            
-            document.getElementById('pageInput').value = currentPage;
-            renderGallery(document.getElementById('searchInput').value, true); 
-            window.scrollTo(0, 0); 
+            currentPage += direction; if (currentPage < 1) currentPage = 1; if (currentPage > maxPage) currentPage = maxPage;
+            document.getElementById('pageInput').value = currentPage; renderGallery(document.getElementById('searchInput').value, true); window.scrollTo(0, 0); 
         }
-
         function jumpToPage(val) {
             const maxPage = Math.ceil(filteredDataLength / itemsPerPage) || 1;
-            let p = parseInt(val);
-            if (isNaN(p) || p < 1) p = 1;
-            if (p > maxPage) p = maxPage;
-            currentPage = p;
-            document.getElementById('pageInput').value = currentPage;
-            renderGallery(document.getElementById('searchInput').value, true);
-            window.scrollTo(0, 0);
+            let p = parseInt(val); if (isNaN(p) || p < 1) p = 1; if (p > maxPage) p = maxPage;
+            currentPage = p; document.getElementById('pageInput').value = currentPage; renderGallery(document.getElementById('searchInput').value, true); window.scrollTo(0, 0);
         }
-
         function jumpToItem() {
             let itemIndex = parseInt(document.getElementById('itemJumpInput').value);
-            if (isNaN(itemIndex) || itemIndex < 1) return;
-            if (itemIndex > filteredDataLength) itemIndex = filteredDataLength;
-            
-            let targetPage = Math.ceil(itemIndex / itemsPerPage);
-            currentPage = targetPage;
-            document.getElementById('pageInput').value = currentPage;
-            
+            if (isNaN(itemIndex) || itemIndex < 1) return; if (itemIndex > filteredDataLength) itemIndex = filteredDataLength;
+            currentPage = Math.ceil(itemIndex / itemsPerPage); document.getElementById('pageInput').value = currentPage;
             renderGallery(document.getElementById('searchInput').value, true);
-            
             setTimeout(() => {
-                let indexOnPage = (itemIndex - 1) % itemsPerPage;
-                let cards = document.querySelectorAll('#galleryGrid > div');
-                if(cards[indexOnPage]) {
-                    cards[indexOnPage].scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    cards[indexOnPage].classList.add('highlight-item');
-                    setTimeout(() => cards[indexOnPage].classList.remove('highlight-item'), 2000); 
-                }
+                let indexOnPage = (itemIndex - 1) % itemsPerPage; let cards = document.querySelectorAll('#galleryGrid > div');
+                if(cards[indexOnPage]) { cards[indexOnPage].scrollIntoView({ behavior: 'smooth', block: 'center' }); cards[indexOnPage].classList.add('highlight-item'); setTimeout(() => cards[indexOnPage].classList.remove('highlight-item'), 2000); }
             }, 100); 
         }
 
@@ -334,139 +411,88 @@
         function undoLastAction() {
             const backup = localStorage.getItem('smartGalleryBackup');
             if (backup) {
-                if(confirm('KEMBALIKAN KEADAAN?\n\nAksi ini akan merestore galeri ke kondisi sebelum aksi terakhir Anda. Lanjutkan?')) {
-                    galleryData = JSON.parse(backup);
-                    localStorage.setItem('smartGalleryData', JSON.stringify(galleryData)); 
-                    renderGallery();
-                    alert('Data telah dikembalikan (Undo berhasil).');
+                if(tC('KEMBALIKAN KEADAAN?\nAksi ini akan merestore galeri ke kondisi sebelumnya. Lanjutkan?', 'RESTORE STATE?\nThis will revert the gallery to its previous state. Continue?')) {
+                    galleryData = JSON.parse(backup); localStorage.setItem('smartGalleryData', JSON.stringify(galleryData)); renderGallery();
+                    tA('Data telah dikembalikan (Undo berhasil).', 'Data reverted successfully.');
                 }
-            } else alert('Tidak ada riwayat backup yang bisa di-undo.');
+            } else tA('Tidak ada riwayat backup.', 'No backup history found.');
         }
 
         function clearCache() {
-            if(confirm('MENGHAPUS SEMUA MEDIA?\n\nAnda yakin ingin mereset galeri ini?')) {
-                createBackup(); 
-                galleryData = [];
-                localStorage.setItem('smartGalleryData', JSON.stringify(galleryData));
-                renderGallery();
+            if(tC('MENGHAPUS SEMUA MEDIA?\nAnda yakin ingin mereset galeri ini?', 'DELETE ALL MEDIA?\nAre you sure you want to reset this gallery?')) {
+                createBackup(); galleryData = []; localStorage.setItem('smartGalleryData', JSON.stringify(galleryData)); renderGallery();
             }
         }
         
         function updateSelection() {
             const checkboxes = document.querySelectorAll('.item-checkbox:checked');
-            const bulkActions = document.getElementById('bulkActions');
-            const selectedCountSpan = document.getElementById('selectedCount');
-            
-            if (checkboxes.length > 0) { 
-                bulkActions.classList.remove('hidden'); 
-                bulkActions.classList.add('flex');
-                selectedCountSpan.innerText = checkboxes.length; 
-            } else { 
-                bulkActions.classList.add('hidden'); 
-                bulkActions.classList.remove('flex');
-            }
-            
+            const bulkActions = document.getElementById('bulkActions'); const selectedCountSpan = document.getElementById('selectedCount');
+            if (checkboxes.length > 0) { bulkActions.classList.remove('hidden'); bulkActions.classList.add('flex'); selectedCountSpan.innerText = checkboxes.length; } 
+            else { bulkActions.classList.add('hidden'); bulkActions.classList.remove('flex'); }
             const allCheckboxes = document.querySelectorAll('.item-checkbox');
-            const selectAllCb = document.getElementById('selectAllCheckbox');
-            selectAllCb.checked = (allCheckboxes.length > 0 && checkboxes.length === allCheckboxes.length);
+            document.getElementById('selectAllCheckbox').checked = (allCheckboxes.length > 0 && checkboxes.length === allCheckboxes.length);
         }
-
         function toggleSelectAll() {
             const isChecked = document.getElementById('selectAllCheckbox').checked;
-            document.querySelectorAll('.item-checkbox').forEach(cb => {
-                if(cb.closest('.group').style.display !== 'none') { cb.checked = isChecked; }
-            });
+            document.querySelectorAll('.item-checkbox').forEach(cb => { if(cb.closest('.group').style.display !== 'none') { cb.checked = isChecked; }});
             updateSelection();
         }
 
         function deleteSelected() {
-            const checkboxes = document.querySelectorAll('.item-checkbox:checked');
-            if (checkboxes.length === 0) return;
-            if (confirm(`MENGHAPUS ${checkboxes.length} ITEM?\n\nItem terpilih akan dihapus permanen.`)) {
-                createBackup(); 
-                const idsToDelete = Array.from(checkboxes).map(cb => cb.value);
-                galleryData = galleryData.filter(item => !idsToDelete.includes(item.id));
-                saveData(); 
+            const checkboxes = document.querySelectorAll('.item-checkbox:checked'); if (checkboxes.length === 0) return;
+            if (tC(`MENGHAPUS ${checkboxes.length} ITEM?\nItem terpilih akan dihapus permanen.`, `DELETE ${checkboxes.length} ITEMS?\nSelected items will be permanently deleted.`)) {
+                createBackup(); const idsToDelete = Array.from(checkboxes).map(cb => cb.value);
+                galleryData = galleryData.filter(item => !idsToDelete.includes(item.id)); saveData(); 
             }
         }
 
         function markSelectedNsfw(makeNsfw) {
-            const checkboxes = document.querySelectorAll('.item-checkbox:checked');
-            if (checkboxes.length === 0) return;
-            const actionText = makeNsfw ? "MENAMBAHKAN TAG NSFW" : "MENGHAPUS TAG NSFW";
-            if (confirm(`Yakin ingin ${actionText} pada ${checkboxes.length} item terpilih?`)) {
-                createBackup();
-                const idsToUpdate = Array.from(checkboxes).map(cb => cb.value);
+            const checkboxes = document.querySelectorAll('.item-checkbox:checked'); if (checkboxes.length === 0) return;
+            if (tC(`Ubah status NSFW pada ${checkboxes.length} item?`, `Change NSFW status for ${checkboxes.length} items?`)) {
+                createBackup(); const idsToUpdate = Array.from(checkboxes).map(cb => cb.value);
                 galleryData = galleryData.map(item => {
                     if (idsToUpdate.includes(item.id)) {
                         let tagsArray = (item.tags || '').split(',').map(t => t.trim()).filter(t => t && t.toLowerCase() !== 'nsfw');
-                        if (makeNsfw) tagsArray.push('nsfw');
-                        item.tags = tagsArray.join(', '); item.updatedAt = new Date().toISOString();
-                    }
-                    return item;
-                });
-                saveData();
-                document.getElementById('selectAllCheckbox').checked = false;
+                        if (makeNsfw) tagsArray.push('nsfw'); item.tags = tagsArray.join(', '); item.updatedAt = new Date().toISOString();
+                    } return item;
+                }); saveData(); document.getElementById('selectAllCheckbox').checked = false;
             }
         }
 
         function markSelectedCategory(catName) {
-            const checkboxes = document.querySelectorAll('.item-checkbox:checked');
-            if (checkboxes.length === 0) return;
-            if (confirm(`Set kategori ${checkboxes.length} item terpilih menjadi '${catName}'?`)) {
-                createBackup();
-                const idsToUpdate = Array.from(checkboxes).map(cb => cb.value);
+            const checkboxes = document.querySelectorAll('.item-checkbox:checked'); if (checkboxes.length === 0) return;
+            if (tC(`Set kategori menjadi '${catName}'?`, `Set category to '${catName}'?`)) {
+                createBackup(); const idsToUpdate = Array.from(checkboxes).map(cb => cb.value);
                 galleryData = galleryData.map(item => {
-                    if (idsToUpdate.includes(item.id)) {
-                        item.category = catName;
-                        item.updatedAt = new Date().toISOString();
-                    }
-                    return item;
-                });
-                saveData();
-                document.getElementById('selectAllCheckbox').checked = false;
+                    if (idsToUpdate.includes(item.id)) { item.category = catName; item.updatedAt = new Date().toISOString(); } return item;
+                }); saveData(); document.getElementById('selectAllCheckbox').checked = false;
             }
         }
 
         function saveData() { 
-            try {
-                localStorage.setItem('smartGalleryData', JSON.stringify(galleryData)); 
-            } catch (e) {
-                alert("⚠️ MEMORI BROWSER PENUH!\n\nAnda mencapai batas maksimal penyimpanan (Local Storage ~5MB). Browser menolak menyimpan data lebih banyak.\n\nTips: Export data Anda ke TXT, Reset aplikasi, lalu mulai dari awal.");
-            }
+            try { localStorage.setItem('smartGalleryData', JSON.stringify(galleryData)); } 
+            catch (e) { tA("⚠️ MEMORI PENUH!\n\nBatas maksimal tercapai. Export ke TXT lalu Reset aplikasi.", "⚠️ STORAGE FULL!\n\nLimit reached. Export to TXT then Reset the app."); }
             renderGallery(document.getElementById('searchInput').value, true); 
         }
         
-        function getYoutubeId(url) {
-            const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/);
-            return (match && match[2].length === 11) ? match[2] : null;
-        }
-
+        function getYoutubeId(url) { const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/); return (match && match[2].length === 11) ? match[2] : null; }
         function detectMediaType(url) {
-            if (url.match(/\.(jpeg|jpg|gif|png|webp)(\?.*)?$/i)) return 'image';
-            if (getYoutubeId(url)) return 'youtube';
-            if (url.match(/\.(m3u|m3u8)(\?.*)?$/i)) return 'hls';
-            if (url.match(/\.(mpd)(\?.*)?$/i)) return 'dash'; 
+            if (url.match(/\.(jpeg|jpg|gif|png|webp)(\?.*)?$/i)) return 'image'; if (getYoutubeId(url)) return 'youtube';
+            if (url.match(/\.(m3u|m3u8)(\?.*)?$/i)) return 'hls'; if (url.match(/\.(mpd)(\?.*)?$/i)) return 'dash'; 
             if (url.match(/\.(mp4|webm|ogg|gifv)(\?.*)?$/i)) return 'video';
-            if (url.includes('/embed/') || url.includes('/iframe/') || url.includes('vidgf.com/') || url.includes('cdeyy.de/')) return 'iframe_video'; 
-            return 'website'; 
+            if (url.includes('/embed/') || url.includes('/iframe/') || url.includes('vidgf.com/') || url.includes('cdeyy.de/')) return 'iframe_video'; return 'website'; 
         }
-
         function getDomainName(url) { try { return new URL(url).hostname; } catch(e) { return url.substring(0, 20)+"..."; } }
 
         function toggleSafeMode() {
-            isSafeMode = !isSafeMode;
-            const btn = document.getElementById('safeModeBtn');
-            const header = document.getElementById('navWrap');
-            
+            isSafeMode = !isSafeMode; const btn = document.getElementById('safeModeBtn'); const header = document.getElementById('navWrap');
             if (isSafeMode) {
-                btn.innerHTML = "<span class='text-lg leading-none'>🛡️</span> SAFE: ON"; btn.className = "btn-wp7 text-[#107C10] flex items-center gap-1";
+                btn.innerHTML = `<span class='text-lg leading-none'>🛡️</span> <span data-i18n="safeOn">${i18n[currentLang].safeOn}</span>`; btn.className = "btn-wp7 text-[#107C10] flex items-center gap-1";
                 header.classList.remove('bg-[#1A0000]'); header.classList.add('bg-[#000000]');
             } else {
-                btn.innerHTML = "<span class='text-lg leading-none'>🔞</span> UNSAFE: OFF"; btn.className = "btn-wp7 text-[#D83B01] flex items-center gap-1";
+                btn.innerHTML = `<span class='text-lg leading-none'>🔞</span> <span data-i18n="safeOff">${i18n[currentLang].safeOff}</span>`; btn.className = "btn-wp7 text-[#D83B01] flex items-center gap-1";
                 header.classList.remove('bg-[#000000]'); header.classList.add('bg-[#1A0000]');
-            }
-            renderGallery();
+            } renderGallery();
         }
 
         function setMediaFilter(type) {
@@ -475,23 +501,17 @@
                 const btn = document.getElementById(`tab-${t}`);
                 if (t === type) { btn.classList.remove('pivot-inactive'); btn.classList.add('pivot-active'); }
                 else { btn.classList.remove('pivot-active'); btn.classList.add('pivot-inactive'); }
-            });
-            renderGallery();
+            }); renderGallery();
         }
 
         function triggerSearch(term) { document.getElementById('searchInput').value = term; renderGallery(term); }
         function clearSearch() { document.getElementById('searchInput').value = ''; renderGallery(''); }
-        
         document.getElementById('searchInput').addEventListener('input', (e) => renderGallery(e.target.value));
 
         function renderGallery(filterText = document.getElementById('searchInput').value, keepPage = false) {
-            grid.innerHTML = '';
-            document.getElementById('selectAllCheckbox').checked = false; updateSelection();
-
+            grid.innerHTML = ''; document.getElementById('selectAllCheckbox').checked = false; updateSelection();
             if (!keepPage) currentPage = 1;
-
-            let displayData = [...galleryData];
-            const sortVal = document.getElementById('sortSelect').value;
+            let displayData = [...galleryData]; const sortVal = document.getElementById('sortSelect').value;
             
             if (isSafeMode) displayData = displayData.filter(item => !(item.tags || '').toLowerCase().includes('nsfw'));
             if (currentMediaFilter === 'image') displayData = displayData.filter(i => i.type === 'image');
@@ -510,170 +530,141 @@
                 });
             }
             
-            filteredDataLength = displayData.length;
-            document.getElementById('itemCount').innerText = filteredDataLength;
-            
-            const maxPage = Math.ceil(filteredDataLength / itemsPerPage) || 1;
-            if (currentPage > maxPage) currentPage = maxPage;
-            
-            document.getElementById('pageInput').value = currentPage;
-            document.getElementById('maxPageInfo').innerText = `/ ${maxPage}`;
+            filteredDataLength = displayData.length; document.getElementById('itemCount').innerText = filteredDataLength;
+            const maxPage = Math.ceil(filteredDataLength / itemsPerPage) || 1; if (currentPage > maxPage) currentPage = maxPage;
+            document.getElementById('pageInput').value = currentPage; document.getElementById('maxPageInfo').innerText = `/ ${maxPage}`;
 
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
+            const startIndex = (currentPage - 1) * itemsPerPage; const endIndex = startIndex + itemsPerPage;
             const paginatedData = displayData.slice(startIndex, endIndex);
 
             paginatedData.forEach((item, index) => {
-                let actualItemNumber = startIndex + index + 1;
-                let mediaHtml = '';
-                const isNsfw = (item.tags || '').toLowerCase().includes('nsfw');
+                let actualItemNumber = startIndex + index + 1; let mediaHtml = ''; const isNsfw = (item.tags || '').toLowerCase().includes('nsfw');
+                let actLbl = currentLang === 'id' ? 'KUNJUNGI' : 'VISIT';
+                let viewLbl = currentLang === 'id' ? 'LIHAT' : 'VIEW';
+                let dlLbl = currentLang === 'id' ? 'UNDUH' : 'DL';
+                let edLbl = currentLang === 'id' ? 'EDIT' : 'EDIT';
 
                 if (item.type === 'image') mediaHtml = `<img src="${item.url}" class="object-cover w-full h-full bg-[#111]" loading="lazy">`;
                 else if (item.type === 'youtube') mediaHtml = `<img src="https://img.youtube.com/vi/${getYoutubeId(item.url)}/hqdefault.jpg" class="object-cover w-full h-full bg-[#111]" loading="lazy"><div class="absolute inset-0 flex items-center justify-center text-[#E81123]/80 text-5xl pointer-events-none">▶</div>`;
                 else if (item.type === 'video') mediaHtml = `<video class="w-full h-full object-cover bg-[#111]" muted preload="metadata" loop><source src="${item.url}#t=1"></video><div class="absolute inset-0 flex items-center justify-center text-white/50 text-5xl font-light pointer-events-none">▶</div>`;
                 else if (item.type === 'iframe_video') mediaHtml = `<div class="w-full h-full bg-[#111] flex flex-col items-center justify-center text-[#444]"><span class="text-4xl font-light mb-1">▶</span></div>`;
-                else if (item.type === 'hls' || item.type === 'dash') {
-                    let label = item.type === 'dash' ? 'DASH' : 'LIVE';
-                    mediaHtml = `<div class="w-full h-full bg-[#111] flex flex-col items-center justify-center text-[#666] border border-[#222]"><span class="text-3xl mb-1">📡</span><span class="text-[9px] font-bold tracking-widest uppercase">${label}</span></div>`;
-                }
+                else if (item.type === 'hls' || item.type === 'dash') { let label = item.type === 'dash' ? 'DASH' : 'LIVE'; mediaHtml = `<div class="w-full h-full bg-[#111] flex flex-col items-center justify-center text-[#666] border border-[#222]"><span class="text-3xl mb-1">📡</span><span class="text-[9px] font-bold tracking-widest uppercase">${label}</span></div>`; }
                 else if (item.type === 'website') mediaHtml = `<div class="w-full h-full bg-[#0078D7] flex flex-col items-center justify-center text-white p-2 text-center break-words"><span class="text-4xl font-light mb-2">🌐</span><span class="text-[9px] font-semibold tracking-widest uppercase truncate w-full">${getDomainName(item.url)}</span></div>`;
 
-                const mainActionBtn = item.type === 'website' 
-                    ? `<a href="${item.url}" target="_blank" class="btn-wp7 text-[#0078D7] text-sm mb-4">KUNJUNGI</a>`
-                    : `<button onclick="openViewer('${item.id}')" class="btn-wp7 text-[#0078D7] text-sm mb-4">LIHAT</button>`;
-
+                const mainActionBtn = item.type === 'website' ? `<a href="${item.url}" target="_blank" class="btn-wp7 text-[#0078D7] text-sm mb-4">${actLbl}</a>` : `<button onclick="openViewer('${item.id}')" class="btn-wp7 text-[#0078D7] text-sm mb-4">${viewLbl}</button>`;
                 const checkboxHtml = `<input type="checkbox" class="item-checkbox absolute top-2 left-2 z-30 w-5 h-5 accent-[#0078D7] cursor-pointer drop-shadow-md outline-none rounded-none border border-white" value="${item.id}" onclick="event.stopPropagation(); updateSelection();">`;
 
-                const card = document.createElement('div');
-                card.className = `relative group aspect-square bg-[#000] overflow-hidden cursor-pointer`;
+                let hasAlts = (item.altUrl1 || item.altUrl2 || item.altUrl3) ? true : false;
+                let altBadgeHtml = hasAlts ? `<div class="absolute bottom-2 right-2 flex gap-1 z-20 pointer-events-none"><span class="w-1.5 h-1.5 rounded-full bg-[#107C10]"></span><span class="w-1.5 h-1.5 rounded-full bg-[#107C10]"></span></div>` : '';
+
+                const card = document.createElement('div'); card.className = `relative group aspect-square bg-[#000] overflow-hidden cursor-pointer`;
                 card.onclick = (e) => { if(e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A' && e.target.tagName !== 'INPUT' && item.type !== 'website') openViewer(item.id); };
-
-                if (item.type === 'video') {
-                    card.onmouseenter = () => { const v = card.querySelector('video'); if(v) v.play().catch(()=>{}); };
-                    card.onmouseleave = () => { const v = card.querySelector('video'); if(v) { v.pause(); v.currentTime = 1; } };
-                }
-
-                let itemNumberBadge = `<div class="absolute top-0 left-0 bg-[#000]/70 text-[#FFB900] text-[9px] px-1 py-0.5 z-20 font-bold ml-8 mt-1 pointer-events-none">#${actualItemNumber}</div>`;
+                if (item.type === 'video') { card.onmouseenter = () => { const v = card.querySelector('video'); if(v) v.play().catch(()=>{}); }; card.onmouseleave = () => { const v = card.querySelector('video'); if(v) { v.pause(); v.currentTime = 1; } }; }
 
                 card.innerHTML = `
-                    ${itemNumberBadge}
-                    ${checkboxHtml}
-                    ${mediaHtml}
+                    <div class="absolute top-0 left-0 bg-[#000]/70 text-[#FFB900] text-[9px] px-1 py-0.5 z-20 font-bold ml-8 mt-1 pointer-events-none">#${actualItemNumber}</div>
+                    ${checkboxHtml} ${altBadgeHtml} ${mediaHtml}
                     <div class="absolute inset-0 bg-black/90 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center p-4 transition-opacity duration-200">
                         <span class="text-[#0078D7] text-xs font-bold uppercase tracking-widest mb-2 w-full text-center truncate">${item.category || 'MEDIA'}</span>
-                        <p class="text-[#ccc] text-xs text-center line-clamp-3 mb-6 font-light leading-relaxed">${item.notes || '<i class="text-[#444]">Tanpa catatan</i>'}</p>
-                        
+                        <p class="text-[#ccc] text-xs text-center line-clamp-3 mb-6 font-light leading-relaxed">${item.notes || '<i class="text-[#444]">-</i>'}</p>
                         ${mainActionBtn}
                         <div class="flex gap-4">
-                            <a href="${item.url}" target="_blank" download class="btn-wp7 text-[#107C10]" onclick="event.stopPropagation()">UNDUH</a>
-                            <button onclick="openModal('edit', '${item.id}'); event.stopPropagation();" class="btn-wp7 text-[#FFB900]">EDIT</button>
+                            <a href="${item.url}" target="_blank" download class="btn-wp7 text-[#107C10]" onclick="event.stopPropagation()">${dlLbl}</a>
+                            <button onclick="openModal('edit', '${item.id}'); event.stopPropagation();" class="btn-wp7 text-[#FFB900]">${edLbl}</button>
                         </div>
                     </div>
                     ${isNsfw ? '<div class="absolute top-0 right-0 bg-[#D83B01] text-white text-[9px] font-bold px-1.5 py-0.5 z-10 pointer-events-none tracking-widest">NSFW</div>' : ''}
-                `;
-                grid.appendChild(card);
-            });
-            updateSelection();
+                `; grid.appendChild(card);
+            }); updateSelection();
         }
 
-        // --- NEW: O(1) SMART MERGE BULK ENGINE ---
+        // --- O(1) SMART MERGE BULK ENGINE ---
         function smartMergeBulk(itemsArray) {
-            let added = 0; let updated = 0; let skipped = 0;
-            let urlMap = new Map();
+            let added = 0; let updated = 0; let skipped = 0; let urlMap = new Map();
+            galleryData.forEach(item => urlMap.set(item.url, item)); let addedItems = [];
             
-            // Map existing data (O(N))
-            galleryData.forEach(item => urlMap.set(item.url, item));
-            let addedItems = [];
-            
-            // Process new items (O(M))
             itemsArray.forEach(newItem => {
                 if (urlMap.has(newItem.url)) {
-                    let existingItem = urlMap.get(newItem.url);
-                    let isModified = false;
-
+                    let existingItem = urlMap.get(newItem.url); let isModified = false;
                     let oldTags = (existingItem.tags || '').split(',').map(t=>t.trim()).filter(t=>t);
                     let newTags = (newItem.tags || '').split(',').map(t=>t.trim()).filter(t=>t);
                     let mergedTags = [...new Set([...oldTags, ...newTags])].join(', ');
                     if (existingItem.tags !== mergedTags) { existingItem.tags = mergedTags; isModified = true; }
-
-                    let oldNotesLen = (existingItem.notes || '').length;
-                    let newNotesLen = (newItem.notes || '').length;
-                    if (newNotesLen > oldNotesLen) { existingItem.notes = newItem.notes; isModified = true; }
-
+                    if ((newItem.notes || '').length > (existingItem.notes || '').length) { existingItem.notes = newItem.notes; isModified = true; }
                     let defaultCats = ['Uncategorized', 'Bulk Import', 'M3U Import'];
                     if (newItem.category && !defaultCats.includes(newItem.category)) {
-                        if (!existingItem.category || defaultCats.includes(existingItem.category)) {
-                            existingItem.category = newItem.category; isModified = true;
-                        }
+                        if (!existingItem.category || defaultCats.includes(existingItem.category)) { existingItem.category = newItem.category; isModified = true; }
                     }
+                    if (newItem.type === 'website' && existingItem.type !== 'website') { existingItem.type = 'website'; isModified = true; }
+                    if (newItem.altUrl1 && !existingItem.altUrl1) { existingItem.altUrl1 = newItem.altUrl1; isModified = true; }
+                    if (newItem.altUrl2 && !existingItem.altUrl2) { existingItem.altUrl2 = newItem.altUrl2; isModified = true; }
+                    if (newItem.altUrl3 && !existingItem.altUrl3) { existingItem.altUrl3 = newItem.altUrl3; isModified = true; }
 
-                    if (newItem.type === 'website' && existingItem.type !== 'website') {
-                        existingItem.type = 'website'; isModified = true;
-                    }
-
-                    if (isModified) {
-                        existingItem.updatedAt = new Date().toISOString();
-                        updated++;
-                    } else {
-                        skipped++;
-                    }
-                } else {
-                    addedItems.push(newItem);
-                    urlMap.set(newItem.url, newItem);
-                    added++;
-                }
+                    if (isModified) { existingItem.updatedAt = new Date().toISOString(); updated++; } else { skipped++; }
+                } else { addedItems.push(newItem); urlMap.set(newItem.url, newItem); added++; }
             });
-            
-            if (addedItems.length > 0) {
-                galleryData = [...addedItems, ...galleryData];
-            }
+            if (addedItems.length > 0) { galleryData = [...addedItems, ...galleryData]; }
             return { added, updated, skipped };
         }
 
-        // --- IN-APP URL CLEANER EXECUTIVE ---
-        function openCleanUrlsModal() {
-            document.getElementById('cleanPatternInput').value = '';
-            document.getElementById('cleanUrlsModal').classList.remove('hidden');
+        // --- SMART CLEANER EXECUTIVE ---
+        function openCleanUrlsModal() { document.getElementById('cleanPatternInput').value = ''; document.getElementById('cleanUrlsModal').classList.remove('hidden'); }
+        function executeInAppUrlClean() {
+            const pattern = document.getElementById('cleanPatternInput').value.trim().toLowerCase();
+            if(!pattern) return tA("Masukkan kata kunci!", "Enter keyword!");
+            if(tC(`🚨 PEMBERSIHAN PINTAR:\n\nSistem akan mencari URL Utama & Alternatif yang mengandung '${pattern}'.\n- Alt mati = Kosong.\n- Utama mati = Promosi Alt.\n- Semua mati = Hapus Total.\n\nLanjutkan?`, `🚨 SMART CLEAN:\n\nLooking for URLs containing '${pattern}'.\n- Dead Alt = Cleared.\n- Dead Main = Promote Alt.\n- All Dead = Total Delete.\n\nContinue?`)) {
+                createBackup(); let fullDeletedCount = 0; let partialCleanedCount = 0;
+                galleryData = galleryData.filter(item => {
+                    let urls = [item.url, item.altUrl1, item.altUrl2, item.altUrl3]; let isModified = false;
+                    for (let i = 0; i < urls.length; i++) { if (urls[i] && urls[i].toLowerCase().includes(pattern)) { urls[i] = ''; isModified = true; } }
+                    let validUrls = urls.filter(u => u && u.trim() !== '');
+                    if (validUrls.length === 0) { fullDeletedCount++; return false; } 
+                    else {
+                        if (isModified) { item.url = validUrls[0] || ''; item.altUrl1 = validUrls[1] || ''; item.altUrl2 = validUrls[2] || ''; item.altUrl3 = validUrls[3] || ''; item.updatedAt = new Date().toISOString(); partialCleanedCount++; }
+                        return true; 
+                    }
+                });
+                saveData(); document.getElementById('cleanUrlsModal').classList.add('hidden');
+                tA(`🧹 PEMBERSIHAN SELESAI!\n- Dihapus Total: ${fullDeletedCount}\n- Diselamatkan: ${partialCleanedCount}`, `🧹 CLEANUP DONE!\n- Deleted: ${fullDeletedCount}\n- Salvaged: ${partialCleanedCount}`);
+            }
         }
 
-        function executeInAppUrlClean() {
-            const pattern = document.getElementById('cleanPatternInput').value.trim();
-            if(!pattern) return alert("Masukkan kata kunci atau awalan URL!");
-            
-            if(confirm(`🚨 PERINGATAN MASAL:\n\nApakah Anda yakin ingin menghapus SEMUA data yang URL-nya mengandung/diawali '${pattern}'?\nAksi ini tidak dapat dibatalkan.`)) {
-                createBackup(); 
-                const initialCount = galleryData.length;
-                galleryData = galleryData.filter(item => !item.url.toLowerCase().includes(pattern.toLowerCase()));
-                const removedCount = initialCount - galleryData.length;
-                
-                saveData();
-                document.getElementById('cleanUrlsModal').classList.add('hidden');
-                alert(`🧹 PEMBERSIHAN SELESAI!\n\n${removedCount} item mati berhasil disapu bersih dari galeri.`);
+        // --- DELETE ON SIGHT ---
+        function deleteFromViewer() {
+            if(!viewerActiveItemId) return;
+            if(tC("Yakin hapus permanen?", "Permanently delete?")) {
+                createBackup(); galleryData = galleryData.filter(item => item.id !== viewerActiveItemId); saveData(); closeViewer();
+            }
+        }
+        function deleteFromEdit() {
+            const editId = document.getElementById('editId').value; if(!editId) return;
+            if(tC("Yakin hapus permanen?", "Permanently delete?")) {
+                createBackup(); galleryData = galleryData.filter(item => item.id !== editId); saveData(); document.getElementById('formModal').classList.add('hidden');
             }
         }
 
         function openModal(mode, id = null) {
-            document.getElementById('mediaForm').reset(); document.getElementById('editId').value = '';
-            document.getElementById('typeOverride').value = 'auto';
+            document.getElementById('mediaForm').reset(); document.getElementById('editId').value = ''; document.getElementById('typeOverride').value = 'auto'; document.getElementById('formDeleteBtn').classList.add('hidden');
             if (mode === 'edit' && id) {
                 const item = galleryData.find(i => i.id === id);
                 if(item) {
                     document.getElementById('editId').value = item.id; document.getElementById('urlInput').value = item.url;
+                    document.getElementById('altUrl1Input').value = item.altUrl1 || ''; document.getElementById('altUrl2Input').value = item.altUrl2 || ''; document.getElementById('altUrl3Input').value = item.altUrl3 || '';
                     document.getElementById('categoryInput').value = item.category; document.getElementById('notesInput').value = item.notes;
                     if(item.type === 'website') document.getElementById('typeOverride').value = 'website';
                     document.getElementById('nsfwCheckbox').checked = (item.tags || '').toLowerCase().includes('nsfw');
                     document.getElementById('tagsInput').value = (item.tags || '').split(',').map(t=>t.trim()).filter(t => t && t.toLowerCase() !== 'nsfw').join(', ');
+                    document.getElementById('formDeleteBtn').classList.remove('hidden');
                 }
-            }
-            document.getElementById('formModal').classList.remove('hidden');
+            } document.getElementById('formModal').classList.remove('hidden');
         }
 
         document.getElementById('mediaForm').addEventListener('submit', function(e) {
-            e.preventDefault(); createBackup(); 
-            const editId = document.getElementById('editId').value; 
-            
-            let url = document.getElementById('urlInput').value.trim(); 
-            url = url.replace(/\.gifv(\?.*)?$/i, '.mp4$1'); 
+            e.preventDefault(); createBackup(); const editId = document.getElementById('editId').value; 
+            let url = document.getElementById('urlInput').value.trim(); url = url.replace(/\.gifv(\?.*)?$/i, '.mp4$1'); 
+            let altUrl1 = document.getElementById('altUrl1Input').value.trim(); altUrl1 = altUrl1.replace(/\.gifv(\?.*)?$/i, '.mp4$1'); 
+            let altUrl2 = document.getElementById('altUrl2Input').value.trim(); altUrl2 = altUrl2.replace(/\.gifv(\?.*)?$/i, '.mp4$1'); 
+            let altUrl3 = document.getElementById('altUrl3Input').value.trim(); altUrl3 = altUrl3.replace(/\.gifv(\?.*)?$/i, '.mp4$1'); 
 
             const category = document.getElementById('categoryInput').value.trim() || 'Uncategorized'; const notes = document.getElementById('notesInput').value.trim(); 
             let type = document.getElementById('typeOverride').value; if (type === 'auto') type = detectMediaType(url);
@@ -682,115 +673,59 @@
 
             if (editId) {
                 const index = galleryData.findIndex(i => i.id === editId);
-                if(index > -1) galleryData[index] = { ...galleryData[index], url, type, category, tags, notes, updatedAt: new Date().toISOString() };
+                if(index > -1) galleryData[index] = { ...galleryData[index], url, altUrl1, altUrl2, altUrl3, type, category, tags, notes, updatedAt: new Date().toISOString() };
                 document.getElementById('formModal').classList.add('hidden'); saveData();
             } else { 
-                let newItem = { id: Date.now().toString()+Math.random().toString(36).substr(2,5), url, type, category, tags, notes, createdAt: new Date().toISOString() };
-                let res = smartMergeBulk([newItem]);
-                document.getElementById('formModal').classList.add('hidden'); saveData();
-                if (res.skipped > 0) alert("URL ini sudah ada di galeri!");
-                else if (res.updated > 0) alert("URL sudah ada! Data digabungkan dan diperbarui.");
+                let newItem = { id: Date.now().toString()+Math.random().toString(36).substr(2,5), url, altUrl1, altUrl2, altUrl3, type, category, tags, notes, createdAt: new Date().toISOString() };
+                let res = smartMergeBulk([newItem]); document.getElementById('formModal').classList.add('hidden'); saveData();
+                if (res.skipped > 0) tA("URL sudah ada!", "URL exists!"); else if (res.updated > 0) tA("Digabungkan!", "Merged!");
             }
         });
 
         // --- Core Processing Functions ---
         function recoverTruncatedJSON(text) {
             try {
-                const regex = /\{[^{}]*"id"[^{}]*"url"[^{}]*"createdAt"[^{}]*\}/g;
-                const matches = text.match(regex);
+                const regex = /\{[^{}]*"id"[^{}]*"url"[^{}]*"createdAt"[^{}]*\}/g; const matches = text.match(regex);
                 if (matches && matches.length > 0) {
-                    const recovered = [];
-                    matches.forEach(m => { try { recovered.push(JSON.parse(m)); } catch(e) {} });
+                    const recovered = []; matches.forEach(m => { try { recovered.push(JSON.parse(m)); } catch(e) {} });
                     if(recovered.length > 0) return { app: "MyGalleryPro", data: recovered };
                 }
             } catch(e) {} return null;
         }
 
         function processTxtImport(text) {
-            let p;
-            try { p = JSON.parse(text); } 
-            catch(err) { 
-                p = recoverTruncatedJSON(text);
-                if (!p) { alert("Format TXT sangat rusak dan tidak bisa dipulihkan. Pastikan file valid."); return; } 
-                else { alert("PERINGATAN: File terpotong sebagian!\nData berhasil diselamatkan."); }
-            }
-
+            let p; try { p = JSON.parse(text); } catch(err) { p = recoverTruncatedJSON(text); if (!p) return tA("Format TXT rusak.", "TXT format corrupted."); else tA("File terpotong! Data diselamatkan.", "File truncated! Data salvaged."); }
             if(p && p.app==="MyGalleryPro") { 
-                createBackup(); 
-                let res = smartMergeBulk(p.data);
-                saveData(); 
-                alert(`Merge Pintar Selesai!\n\nDitambahkan baru: ${res.added}\nDiperbarui: ${res.updated}\nDiabaikan (Sama Persis): ${res.skipped}`);
-            } else { alert("Data tidak dikenali sebagai format MyGalleryPro."); }
+                createBackup(); let res = smartMergeBulk(p.data); saveData(); tA(`Merge Selesai!\nBaru: ${res.added}\nDiperbarui: ${res.updated}\nDiabaikan: ${res.skipped}`, `Merge Done!\nNew: ${res.added}\nUpdated: ${res.updated}\nSkipped: ${res.skipped}`);
+            } else { tA("Data tidak dikenali.", "Unrecognized format."); }
         }
 
         function processM3uImport(text) {
-            createBackup();
-            const lines = text.split('\n');
-            let currentCat = 'M3U Import'; let currentNote = '';
-            let newItems = [];
-            
+            createBackup(); const lines = text.split('\n'); let currentCat = 'M3U Import'; let currentNote = ''; let newItems = [];
             lines.forEach(line => {
                 line = line.trim();
-                if (line.startsWith('#EXTINF:')) {
-                    const catMatch = line.match(/group-title="([^"]+)"/i); if (catMatch) currentCat = catMatch[1];
-                    const commaIdx = line.lastIndexOf(','); if (commaIdx > -1) currentNote = line.substring(commaIdx + 1).trim();
-                } else if (line.startsWith('http')) {
-                    newItems.push({
-                        id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
-                        url: line, type: detectMediaType(line), category: currentCat, tags: '', 
-                        notes: currentNote || 'Streaming Channel', createdAt: new Date().toISOString()
-                    });
-                    currentNote = '';
-                }
+                if (line.startsWith('#EXTINF:')) { const catMatch = line.match(/group-title="([^"]+)"/i); if (catMatch) currentCat = catMatch[1]; const commaIdx = line.lastIndexOf(','); if (commaIdx > -1) currentNote = line.substring(commaIdx + 1).trim(); } 
+                else if (line.startsWith('http')) { newItems.push({ id: Date.now().toString() + Math.random().toString(36).substr(2, 5), url: line, type: detectMediaType(line), category: currentCat, tags: '', notes: currentNote || 'Streaming Channel', createdAt: new Date().toISOString() }); currentNote = ''; }
             });
-            
-            if(newItems.length > 0) { 
-                let res = smartMergeBulk(newItems);
-                saveData(); 
-                alert(`Import M3U Selesai!\n\nChannel baru: ${res.added}\nChannel diperbarui: ${res.updated}\nDiabaikan: ${res.skipped}`); 
-            } else { alert("Tidak ada link baru yang valid di M3U ini."); }
+            if(newItems.length > 0) { let res = smartMergeBulk(newItems); saveData(); tA(`M3U Selesai!\nBaru: ${res.added}\nDiperbarui: ${res.updated}`, `M3U Done!\nNew: ${res.added}\nUpdated: ${res.updated}`); } 
+            else { tA("Tidak ada link valid.", "No valid links."); }
         }
 
-        function openImportUrlModal() {
-            document.getElementById('importUrlInput').value = '';
-            document.getElementById('importUrlType').value = 'auto';
-            document.getElementById('importUrlModal').classList.remove('hidden');
-        }
-
+        function openImportUrlModal() { document.getElementById('importUrlInput').value = ''; document.getElementById('importUrlType').value = 'auto'; document.getElementById('importUrlModal').classList.remove('hidden'); }
         async function executeUrlImport() {
-            const url = document.getElementById('importUrlInput').value.trim();
-            const type = document.getElementById('importUrlType').value;
-            const btn = document.getElementById('btnExecuteUrl');
-            
-            if(!url) return alert("Masukkan URL yang valid!");
-            
-            btn.innerText = "MEMUAT..."; btn.disabled = true;
+            const url = document.getElementById('importUrlInput').value.trim(); const type = document.getElementById('importUrlType').value; const btn = document.getElementById('btnExecuteUrl');
+            if(!url) return tA("Masukkan URL!", "Enter URL!"); btn.innerText = "MEMUAT..."; btn.disabled = true;
             try {
-                let response;
-                try {
-                    response = await fetch(url);
-                    if(!response.ok) throw new Error("Gagal direct");
-                } catch(e) {
-                    response = await fetch('https://corsproxy.io/?' + encodeURIComponent(url));
-                }
-                const textData = await response.text();
-                if (textData.trim().startsWith('<!DOCTYPE html>')) throw new Error("Diblokir sistem keamanan jaringan.");
-                
+                let response; try { response = await fetch(url); if(!response.ok) throw new Error("Gagal direct"); } catch(e) { response = await fetch('https://corsproxy.io/?' + encodeURIComponent(url)); }
+                const textData = await response.text(); if (textData.trim().startsWith('<!DOCTYPE html>')) throw new Error("Diblokir jaringan / Network blocked.");
                 let isM3u = type === 'm3u' || (type === 'auto' && (url.toLowerCase().includes('.m3u') || textData.startsWith('#EXTM3U')));
-                if (isM3u) processM3uImport(textData); else processTxtImport(textData);
-                document.getElementById('importUrlModal').classList.add('hidden');
-            } catch (err) {
-                alert("Error: " + err.message);
-            } finally { btn.innerText = "AMBIL DATA"; btn.disabled = false; }
+                if (isM3u) processM3uImport(textData); else processTxtImport(textData); document.getElementById('importUrlModal').classList.add('hidden');
+            } catch (err) { alert("Error: " + err.message); } finally { btn.innerText = currentLang === 'id' ? "AMBIL DATA" : "FETCH DATA"; btn.disabled = false; }
         }
 
         function exportData() { 
-            if(!galleryData.length) return; 
-            const jsonStr = JSON.stringify({ app: "MyGalleryPro", data: galleryData }, null, 2);
-            const blob = new Blob([jsonStr], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `MyGallery_${new Date().toISOString().split('T')[0]}.txt`; a.click(); 
-            URL.revokeObjectURL(url);
+            if(!galleryData.length) return; const jsonStr = JSON.stringify({ app: "MyGalleryPro", data: galleryData }, null, 2); const blob = new Blob([jsonStr], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `MyGallery_${new Date().toISOString().split('T')[0]}.txt`; a.click(); URL.revokeObjectURL(url);
         }
 
         function importData(e) { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = ev => { processTxtImport(ev.target.result); }; r.readAsText(f); e.target.value = ''; }
@@ -799,19 +734,17 @@
         document.getElementById('txtFileInput').addEventListener('change', function(e) { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = evt => { const t = document.getElementById('bulkTextarea'); t.value = (t.value + '\n' + evt.target.result).trim(); }; r.readAsText(f); });
         
         document.getElementById('bulkForm').addEventListener('submit', function(e) {
-            e.preventDefault(); createBackup(); 
-            const rawText = document.getElementById('bulkTextarea').value; const category = document.getElementById('bulkCategory').value.trim() || 'Bulk Import'; 
+            e.preventDefault(); createBackup(); const rawText = document.getElementById('bulkTextarea').value; const category = document.getElementById('bulkCategory').value.trim() || 'Bulk Import'; 
             let tagsArray = document.getElementById('bulkTags').value.trim().split(',').map(t => t.trim()).filter(t => t && t.toLowerCase() !== 'nsfw');
             if (document.getElementById('bulkNsfwCheckbox').checked) tagsArray.push('nsfw'); const finalTags = tagsArray.join(', ');
             const urls = rawText.split('\n').map(u => u.trim().replace(/\.gifv(\?.*)?$/i, '.mp4$1')).filter(u => u.startsWith('http')); 
-            
             let newItems = urls.map(url => ({ id: Date.now().toString() + Math.random().toString(36).substr(2, 5), url, type: detectMediaType(url), category, tags: finalTags, notes: '', createdAt: new Date().toISOString() }));
-            let res = smartMergeBulk(newItems);
-            
-            saveData(); 
-            alert(`Bulk Selesai!\n\nBaru: ${res.added} | Diperbarui: ${res.updated} | Diabaikan: ${res.skipped}`);
-            document.getElementById('bulkModal').classList.add('hidden');
+            let res = smartMergeBulk(newItems); saveData(); tA(`Bulk Selesai!\nBaru: ${res.added} | Diperbarui: ${res.updated}`, `Bulk Done!\nNew: ${res.added} | Updated: ${res.updated}`); document.getElementById('bulkModal').classList.add('hidden');
         });
+
+        // ==========================================
+        // VIEWER & AUTO-FALLBACK ENGINE
+        // ==========================================
 
         function updateTransform() { const img = document.getElementById('activeMedia'); if(img && img.tagName === 'IMG') img.style.transform = `translate(${panX}px, ${panY}px) scale(${currentScale})`; }
         function resetPanZoom() { currentScale = 1; panX = 0; panY = 0; const slider = document.getElementById('zoomSlider'); if(slider) slider.value = 1; updateTransform(); }
@@ -819,79 +752,87 @@
 
         function openViewer(id) {
             const item = galleryData.find(i => i.id === id); if(!item || item.type === 'website') return; 
-            const content = document.getElementById('viewerContent'); const zoomControl = document.getElementById('zoomControl');
-            const viewerEditBtn = document.getElementById('viewerEditBtn');
-            viewerEditBtn.onclick = () => { closeViewer(); openModal('edit', id); };
-            
+            viewerActiveItemId = id; viewerItemUrls = [item.url, item.altUrl1, item.altUrl2, item.altUrl3].filter(u => u && u.trim() !== ''); viewerCurrentUrlIndex = 0;
+            const viewerEditBtn = document.getElementById('viewerEditBtn'); viewerEditBtn.onclick = () => { closeViewer(); openModal('edit', id); };
+            document.getElementById('viewerCategory').innerText = item.category || 'UNCATEGORIZED'; document.getElementById('viewerNotes').innerText = item.notes || '';
+            document.getElementById('viewerTags').innerHTML = (item.tags || '').split(',').filter(t=>t.trim()).map(t=>`<span class="text-[#0078D7] text-sm mr-4 font-semibold tracking-widest uppercase">#${t.trim()}</span>`).join('');
+            document.getElementById('viewerModal').classList.remove('hidden'); document.body.style.overflow = 'hidden'; renderViewerMedia();
+        }
+
+        function triggerFallback() {
+            if (viewerCurrentUrlIndex < viewerItemUrls.length - 1) { console.log(`URL mati. Beralih ke Server ${viewerCurrentUrlIndex + 2}`); viewerCurrentUrlIndex++; renderViewerMedia(); }
+        }
+        function manualSwitchServer(index) { viewerCurrentUrlIndex = index; renderViewerMedia(); }
+
+        function promoteCurrentUrl() {
+            const item = galleryData.find(i => i.id === viewerActiveItemId); if(!item) return;
+            const workingUrl = viewerItemUrls[viewerCurrentUrlIndex]; const remainingAlts = viewerItemUrls.slice(viewerCurrentUrlIndex + 1); 
+            item.url = workingUrl; item.altUrl1 = remainingAlts[0] || ''; item.altUrl2 = remainingAlts[1] || ''; item.altUrl3 = remainingAlts[2] || '';
+            item.type = detectMediaType(workingUrl); item.updatedAt = new Date().toISOString(); saveData();
+            viewerItemUrls = [item.url, item.altUrl1, item.altUrl2, item.altUrl3].filter(u => u && u.trim() !== ''); viewerCurrentUrlIndex = 0; renderViewerMedia();
+            tA("SUKSES! URL Utama diperbarui.", "SUCCESS! Main URL updated.");
+        }
+
+        function renderViewerMedia() {
+            const content = document.getElementById('viewerContent'); const zoomControl = document.getElementById('zoomControl'); const fallbackBanner = document.getElementById('fallbackBanner'); const serverSelector = document.getElementById('serverSelector');
             content.innerHTML = ''; resetPanZoom(); zoomControl.classList.add('hidden');
-            if(activeHlsEngine) { activeHlsEngine.destroy(); activeHlsEngine = null; }
-            if(activeDashEngine) { activeDashEngine.destroy(); activeDashEngine = null; }
-            
-            if (item.type === 'image') { 
-                content.innerHTML = `<img id="activeMedia" src="${item.url}" class="max-w-full max-h-full object-contain select-none" draggable="false">`; 
+            if(activeHlsEngine) { activeHlsEngine.destroy(); activeHlsEngine = null; } if(activeDashEngine) { activeDashEngine.destroy(); activeDashEngine = null; }
+
+            if (viewerCurrentUrlIndex > 0) { document.getElementById('fallbackServerNum').innerText = `Server ${viewerCurrentUrlIndex + 1}`; fallbackBanner.classList.remove('hidden'); } else { fallbackBanner.classList.add('hidden'); }
+            if (viewerItemUrls.length > 1) { serverSelector.classList.remove('hidden'); serverSelector.classList.add('flex'); serverSelector.innerHTML = viewerItemUrls.map((u, idx) => `<button onclick="manualSwitchServer(${idx})" class="server-btn ${idx === viewerCurrentUrlIndex ? 'active' : ''}">S${idx + 1}</button>`).join(''); } else { serverSelector.classList.add('hidden'); serverSelector.classList.remove('flex'); }
+            if (viewerItemUrls.length === 0) { content.innerHTML = `<div class="text-white text-2xl font-light">Dead Link ☠️</div>`; return; }
+
+            const currentPlayUrl = viewerItemUrls[viewerCurrentUrlIndex]; const type = detectMediaType(currentPlayUrl);
+
+            if (type === 'image') { 
+                content.innerHTML = `<img id="activeMedia" src="${currentPlayUrl}" onerror="triggerFallback()" class="max-w-full max-h-full object-contain select-none" draggable="false">`; 
                 zoomControl.classList.remove('hidden'); zoomControl.classList.add('flex');
                 const img = document.getElementById('activeMedia'); img.style.cursor = 'grab'; img.style.transition = 'none'; 
                 img.addEventListener('wheel', (e) => { e.preventDefault(); const delta = e.deltaY * -0.005; currentScale = Math.min(Math.max(1, currentScale + delta), 5); document.getElementById('zoomSlider').value = currentScale; updateTransform(); });
-                img.addEventListener('dblclick', resetPanZoom);
-                img.addEventListener('mousedown', (e) => { e.preventDefault(); isPanning = true; startPanX = e.clientX - panX; startPanY = e.clientY - panY; img.style.cursor = 'grabbing'; });
-                window.addEventListener('mouseup', () => { isPanning = false; if(img) img.style.cursor = 'grab'; });
-                window.addEventListener('mousemove', (e) => { if (!isPanning || !img) return; e.preventDefault(); panX = e.clientX - startPanX; panY = e.clientY - startPanY; updateTransform(); });
+                img.addEventListener('dblclick', resetPanZoom); img.addEventListener('mousedown', (e) => { e.preventDefault(); isPanning = true; startPanX = e.clientX - panX; startPanY = e.clientY - panY; img.style.cursor = 'grabbing'; });
+                window.addEventListener('mouseup', () => { isPanning = false; if(img) img.style.cursor = 'grab'; }); window.addEventListener('mousemove', (e) => { if (!isPanning || !img) return; e.preventDefault(); panX = e.clientX - startPanX; panY = e.clientY - startPanY; updateTransform(); });
             } 
-            else if (item.type === 'youtube') {
-                const ytId = getYoutubeId(item.url);
-                content.innerHTML = `<div class="relative w-full max-w-5xl aspect-video bg-[#000] flex flex-col items-center justify-center overflow-hidden border border-[#333] shadow-2xl"><img src="https://img.youtube.com/vi/${ytId}/maxresdefault.jpg" onerror="this.src='https://img.youtube.com/vi/${ytId}/hqdefault.jpg'" class="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm select-none"><div class="z-10 flex flex-col items-center p-8 text-center bg-black/60 w-full h-full justify-center"><span class="text-7xl mb-6 text-[#E81123]">▶</span><h3 class="text-white text-3xl font-light mb-3 uppercase tracking-widest">YOUTUBE DIALIKKAN</h3><a href="${item.url}" target="_blank" class="btn-wp7 bg-[#E81123] text-white px-10 py-4 text-base hover:bg-white hover:text-[#E81123] transition duration-300 shadow-lg border border-[#E81123]">BUKA TAB BARU</a></div></div>`;
+            else if (type === 'youtube') {
+                const ytId = getYoutubeId(currentPlayUrl); let ytbLbl = currentLang === 'id' ? 'BUKA TAB BARU' : 'OPEN NEW TAB';
+                content.innerHTML = `<div class="relative w-full max-w-5xl aspect-video bg-[#000] flex flex-col items-center justify-center overflow-hidden border border-[#333] shadow-2xl"><img src="https://img.youtube.com/vi/${ytId}/maxresdefault.jpg" onerror="this.src='https://img.youtube.com/vi/${ytId}/hqdefault.jpg'" class="absolute inset-0 w-full h-full object-cover opacity-30 blur-sm select-none"><div class="z-10 flex flex-col items-center p-8 text-center bg-black/60 w-full h-full justify-center"><span class="text-7xl mb-6 text-[#E81123]">▶</span><h3 class="text-white text-3xl font-light mb-3 uppercase tracking-widest">YOUTUBE DIALIKKAN</h3><a href="${currentPlayUrl}" target="_blank" class="btn-wp7 bg-[#E81123] text-white px-10 py-4 text-base hover:bg-white hover:text-[#E81123] transition duration-300 shadow-lg border border-[#E81123]">${ytbLbl}</a></div></div>`;
             }
-            else if (item.type === 'video') content.innerHTML = `<video id="activeMedia" controls autoplay loop class="max-w-full max-h-full outline-none bg-[#111]"><source src="${item.url}"></video>`;
-            else if (item.type === 'iframe_video') content.innerHTML = `<iframe class="w-full h-full max-w-6xl bg-[#111]" src="${item.url}" frameborder="0" allowfullscreen></iframe>`;
-            else if (item.type === 'hls') {
-                content.innerHTML = `<video id="activeMedia" controls autoplay class="max-w-full max-h-full bg-[#111] outline-none"></video>`;
-                const videoEl = document.getElementById('activeMedia');
-                if (Hls.isSupported()) { activeHlsEngine = new Hls(); activeHlsEngine.loadSource(item.url); activeHlsEngine.attachMedia(videoEl); activeHlsEngine.on(Hls.Events.MANIFEST_PARSED, function() { videoEl.play(); }); } 
-                else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) { videoEl.src = item.url; videoEl.addEventListener('loadedmetadata', function() { videoEl.play(); }); }
+            else if (type === 'video') { content.innerHTML = `<video id="activeMedia" controls autoplay loop class="max-w-full max-h-full outline-none bg-[#111]"><source src="${currentPlayUrl}" onerror="triggerFallback()"></video>`; document.getElementById('activeMedia').addEventListener('error', triggerFallback, true); }
+            else if (type === 'iframe_video') { content.innerHTML = `<iframe class="w-full h-full max-w-6xl bg-[#111]" src="${currentPlayUrl}" frameborder="0" allowfullscreen></iframe>`; }
+            else if (type === 'hls') {
+                content.innerHTML = `<video id="activeMedia" controls autoplay class="max-w-full max-h-full bg-[#111] outline-none"></video>`; const videoEl = document.getElementById('activeMedia');
+                if (Hls.isSupported()) { 
+                    activeHlsEngine = new Hls(); activeHlsEngine.loadSource(currentPlayUrl); activeHlsEngine.attachMedia(videoEl); activeHlsEngine.on(Hls.Events.MANIFEST_PARSED, function() { videoEl.play(); }); 
+                    activeHlsEngine.on(Hls.Events.ERROR, function (event, data) { if (data.fatal) { if (data.type === Hls.ErrorTypes.NETWORK_ERROR) { activeHlsEngine.destroy(); triggerFallback(); } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) { activeHlsEngine.recoverMediaError(); } else { activeHlsEngine.destroy(); triggerFallback(); } } });
+                } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) { videoEl.src = currentPlayUrl; videoEl.addEventListener('loadedmetadata', function() { videoEl.play(); }); videoEl.addEventListener('error', triggerFallback, true); }
             }
-            else if (item.type === 'dash') {
-                content.innerHTML = `<video id="activeMedia" controls autoplay class="max-w-full max-h-full bg-[#111] outline-none"></video>`;
-                const videoEl = document.getElementById('activeMedia'); activeDashEngine = dashjs.MediaPlayer().create(); activeDashEngine.initialize(videoEl, item.url, true);
+            else if (type === 'dash') {
+                content.innerHTML = `<video id="activeMedia" controls autoplay class="max-w-full max-h-full bg-[#111] outline-none"></video>`; const videoEl = document.getElementById('activeMedia'); 
+                activeDashEngine = dashjs.MediaPlayer().create(); activeDashEngine.initialize(videoEl, currentPlayUrl, true); activeDashEngine.on(dashjs.MediaPlayer.events.ERROR, function() { activeDashEngine.destroy(); triggerFallback(); });
             }
-            document.getElementById('viewerCategory').innerText = item.category || 'UNCATEGORIZED'; document.getElementById('viewerNotes').innerText = item.notes || '';
-            document.getElementById('viewerTags').innerHTML = (item.tags || '').split(',').filter(t=>t.trim()).map(t=>`<span class="text-[#0078D7] text-sm mr-4 font-semibold tracking-widest uppercase">#${t.trim()}</span>`).join('');
-            document.getElementById('viewerModal').classList.remove('hidden'); document.body.style.overflow = 'hidden';
         }
         
-        function closeViewer() { document.getElementById('viewerModal').classList.add('hidden'); document.getElementById('viewerContent').innerHTML = ''; if(activeHlsEngine) { activeHlsEngine.destroy(); activeHlsEngine = null; } if(activeDashEngine) { activeDashEngine.destroy(); activeDashEngine = null; } document.body.style.overflow = 'auto'; if (document.fullscreenElement) document.exitFullscreen(); }
+        function closeViewer() { document.getElementById('viewerModal').classList.add('hidden'); document.getElementById('viewerContent').innerHTML = ''; if(activeHlsEngine) { activeHlsEngine.destroy(); activeHlsEngine = null; } if(activeDashEngine) { activeDashEngine.destroy(); activeDashEngine = null; } document.body.style.overflow = 'auto'; if (document.fullscreenElement) document.exitFullscreen(); document.getElementById('fallbackBanner').classList.add('hidden'); }
         function toggleNativeFullscreen() { if (!document.fullscreenElement) document.getElementById('viewerModal').requestFullscreen(); else document.exitFullscreen(); }
 
         function openM3uModal() {
-            let vData = galleryData.filter(i => ['video','hls','iframe_video','dash'].includes(i.type));
-            if(isSafeMode) vData = vData.filter(item => !(item.tags || '').toLowerCase().includes('nsfw'));
-            if(!vData.length) return alert("Tidak ada video.");
-            const categories = [...new Set(vData.map(i => i.category || 'Uncategorized'))].sort();
-            let html = '';
+            let vData = galleryData.filter(i => ['video','hls','iframe_video','dash'].includes(i.type)); if(isSafeMode) vData = vData.filter(item => !(item.tags || '').toLowerCase().includes('nsfw'));
+            if(!vData.length) return tA("Tidak ada video.", "No videos.");
+            const categories = [...new Set(vData.map(i => i.category || 'Uncategorized'))].sort(); let html = '';
             categories.forEach(cat => { html += `<label class="flex items-center gap-4 p-3 bg-[#111] border border-[#333] cursor-pointer hover:bg-[#222] transition"><input type="checkbox" value="${cat}" class="m3u-cb w-5 h-5 accent-[#D83B01] rounded-none border-none" checked><span class="text-sm font-light text-white">${cat}</span></label>`; });
             document.getElementById('m3uCheckboxContainer').innerHTML = html; document.getElementById('m3uModal').classList.remove('hidden');
         }
 
         function executeM3uExport() {
-            const checkedBoxes = document.querySelectorAll('.m3u-cb:checked'); if(checkedBoxes.length === 0) return alert("Pilih minimal 1 kategori!");
+            const checkedBoxes = document.querySelectorAll('.m3u-cb:checked'); if(checkedBoxes.length === 0) return tA("Pilih kategori!", "Select a category!");
             const selectedCats = Array.from(checkedBoxes).map(cb => cb.value); const fileName = document.getElementById('m3uFileName').value || "My_TV_Playlist";
-            let vData = galleryData.filter(i => ['video','hls','iframe_video','dash'].includes(i.type));
-            if(isSafeMode) vData = vData.filter(item => !(item.tags || '').toLowerCase().includes('nsfw'));
-            vData = vData.filter(item => selectedCats.includes(item.category || 'Uncategorized'));
-            if(!vData.length) return alert("Data kosong.");
-            
+            let vData = galleryData.filter(i => ['video','hls','iframe_video','dash'].includes(i.type)); if(isSafeMode) vData = vData.filter(item => !(item.tags || '').toLowerCase().includes('nsfw'));
+            vData = vData.filter(item => selectedCats.includes(item.category || 'Uncategorized')); if(!vData.length) return tA("Data kosong.", "Empty data.");
             let m3u = "#EXTM3U\n"; 
             vData.forEach(i => { 
-                let isNsfw = (i.tags || '').toLowerCase().includes('nsfw');
-                let baseName = (i.notes || 'Video').replace(/\n/g, ' ');
-                let otherTags = (i.tags || '').split(',').map(t => t.trim()).filter(t => t && t.toLowerCase() !== 'nsfw');
-                let tagString = otherTags.length > 0 ? ' (#' + otherTags.join(' #') + ')' : '';
-                let channelName = isNsfw ? `[🔞 NSFW] ${baseName}${tagString}` : `${baseName}${tagString}`;
+                let isNsfw = (i.tags || '').toLowerCase().includes('nsfw'); let baseName = (i.notes || 'Video').replace(/\n/g, ' '); let otherTags = (i.tags || '').split(',').map(t => t.trim()).filter(t => t && t.toLowerCase() !== 'nsfw'); let tagString = otherTags.length > 0 ? ' (#' + otherTags.join(' #') + ')' : ''; let channelName = isNsfw ? `[🔞 NSFW] ${baseName}${tagString}` : `${baseName}${tagString}`;
                 m3u += `#EXTINF:-1 group-title="${i.category||'Uncategorized'}",${channelName}\n${i.url}\n`; 
             });
-            const blob = new Blob([m3u], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = fileName+".m3u"; a.click(); URL.revokeObjectURL(url);
-            document.getElementById('m3uModal').classList.add('hidden');
+            const blob = new Blob([m3u], { type: 'text/plain;charset=utf-8' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = fileName+".m3u"; a.click(); URL.revokeObjectURL(url); document.getElementById('m3uModal').classList.add('hidden');
         }
 
         renderGallery();
