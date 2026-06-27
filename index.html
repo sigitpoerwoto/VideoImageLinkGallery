@@ -225,7 +225,7 @@
         <div class="bg-[#111111] border-2 border-[#333333] w-full max-w-md p-8">
             <h2 class="text-2xl font-light mb-2 text-white uppercase tracking-wider" data-i18n="titleExpM3u">Export M3U</h2>
             <p class="text-xs text-[#888888] mb-6"><span data-i18n="lblChooseCat">Pilih kategori.</span> <i id="m3uSafeWarning" class="text-[#D83B01]"></i></p>
-            <input type="text" id="m3uFileName" value="My_TV_Playlist" class="w-full p-3 mb-6 bg-[#000] border border-[#444] outline-none text-white focus:border-[#D83B01]">
+            <input type="text" id="m3uFileName" class="w-full p-3 mb-6 bg-[#000] border border-[#444] outline-none text-white focus:border-[#D83B01]">
             <div id="m3uCheckboxContainer" class="border border-[#333] p-4 max-h-48 overflow-y-auto space-y-3 mb-8 bg-[#000]"></div>
             <div class="flex gap-8">
                 <button onclick="executeM3uExport()" class="btn-wp7 text-[#D83B01] text-sm" data-i18n="btnDl">UNDUH FILE</button>
@@ -363,6 +363,14 @@
 
         function tA(idMsg, enMsg) { alert(currentLang === 'en' ? enMsg : idMsg); }
         function tC(idMsg, enMsg) { return confirm(currentLang === 'en' ? enMsg : idMsg); }
+
+        // --- ID GENERATOR ---
+        function genShortId() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < 6; i++) { result += chars.charAt(Math.floor(Math.random() * chars.length)); }
+            return result;
+        }
 
         // --- CORE LOGIC ---
         let galleryData = JSON.parse(localStorage.getItem('smartGalleryData')) || [];
@@ -725,7 +733,8 @@
 
         function exportData() { 
             if(!galleryData.length) return; const jsonStr = JSON.stringify({ app: "MyGalleryPro", data: galleryData }, null, 2); const blob = new Blob([jsonStr], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `MyGallery_${new Date().toISOString().split('T')[0]}.txt`; a.click(); URL.revokeObjectURL(url);
+            const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; 
+            a.download = `${genShortId()}.txt`; a.click(); URL.revokeObjectURL(url);
         }
 
         function importData(e) { const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload = ev => { processTxtImport(ev.target.result); }; r.readAsText(f); e.target.value = ''; }
@@ -819,12 +828,14 @@
             if(!vData.length) return tA("Tidak ada video.", "No videos.");
             const categories = [...new Set(vData.map(i => i.category || 'Uncategorized'))].sort(); let html = '';
             categories.forEach(cat => { html += `<label class="flex items-center gap-4 p-3 bg-[#111] border border-[#333] cursor-pointer hover:bg-[#222] transition"><input type="checkbox" value="${cat}" class="m3u-cb w-5 h-5 accent-[#D83B01] rounded-none border-none" checked><span class="text-sm font-light text-white">${cat}</span></label>`; });
-            document.getElementById('m3uCheckboxContainer').innerHTML = html; document.getElementById('m3uModal').classList.remove('hidden');
+            document.getElementById('m3uCheckboxContainer').innerHTML = html; 
+            document.getElementById('m3uFileName').value = genShortId();
+            document.getElementById('m3uModal').classList.remove('hidden');
         }
 
         function executeM3uExport() {
             const checkedBoxes = document.querySelectorAll('.m3u-cb:checked'); if(checkedBoxes.length === 0) return tA("Pilih kategori!", "Select a category!");
-            const selectedCats = Array.from(checkedBoxes).map(cb => cb.value); const fileName = document.getElementById('m3uFileName').value || "My_TV_Playlist";
+            const selectedCats = Array.from(checkedBoxes).map(cb => cb.value); const fileName = document.getElementById('m3uFileName').value || genShortId();
             let vData = galleryData.filter(i => ['video','hls','iframe_video','dash'].includes(i.type)); if(isSafeMode) vData = vData.filter(item => !(item.tags || '').toLowerCase().includes('nsfw'));
             vData = vData.filter(item => selectedCats.includes(item.category || 'Uncategorized')); if(!vData.length) return tA("Data kosong.", "Empty data.");
             let m3u = "#EXTM3U\n"; 
